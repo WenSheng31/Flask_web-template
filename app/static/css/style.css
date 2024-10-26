@@ -1,0 +1,55 @@
+:root {
+    --bs-primary: #0d6efd;
+    --bs-body-bg: #f8f9fa;
+}
+
+body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background-color: var(--bs-body-bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+/* Navbar customization */
+.navbar-brand {
+    font-weight: 700;
+}
+
+.nav-link {
+    font-weight: 500;
+}
+
+/* Card customization */
+.card {
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+}
+
+/* Button customization */
+.btn {
+    font-weight: 500;
+    padding: 0.5rem 1.5rem;
+}
+
+/* Custom utility classes */
+.shadow-hover {
+    transition: box-shadow 0.2s ease;
+}
+
+.shadow-hover:hover {
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+}
+
+/* 響應式調整 */
+@media (max-width: 768px) {
+    .display-4 {
+        font-size: 2.5rem;
+    }
+}
