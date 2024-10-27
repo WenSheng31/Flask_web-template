@@ -1,11 +1,21 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models.user import User
 from app import db
 from urllib.parse import urlparse
+from werkzeug.utils import secure_filename
+from PIL import Image
 from datetime import datetime
+import os
+import time
 
 auth_bp = Blueprint('auth', __name__)
+
+
+def allowed_file(filename):
+    """檢查文件是否為允許的類型"""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif'}
+
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -85,30 +95,64 @@ def profile():
         action = request.form.get('action')
 
         if action == 'update_profile':
-            # 檢查用戶名是否已存在
-            if (request.form.get('username') != current_user.username and
-                    User.query.filter_by(username=request.form.get('username')).first()):
-                flash('此用戶名已被使用', 'danger')
-                return redirect(url_for('auth.profile'))
-
-            # 檢查郵箱是否已存在
-            if (request.form.get('email') != current_user.email and
-                    User.query.filter_by(email=request.form.get('email')).first()):
-                flash('此電子郵件已被註冊', 'danger')
-                return redirect(url_for('auth.profile'))
-
             try:
-                current_user.username = request.form.get('username')
-                current_user.email = request.form.get('email')
+                # 處理頭像上傳
+                if 'avatar' in request.files:
+                    file = request.files['avatar']
+                    if file and allowed_file(file.filename):
+                        # 生成安全的文件名
+                        filename = secure_filename(f"avatar_{current_user.id}_{int(time.time())}.jpg")
+                        filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+
+                        # 保存並處理圖片
+                        image = Image.open(file)
+                        # 將圖片轉換為正方形
+                        min_side = min(image.size)
+                        left = (image.width - min_side) // 2
+                        top = (image.height - min_side) // 2
+                        right = left + min_side
+                        bottom = top + min_side
+                        image = image.crop((left, top, right, bottom))
+                        # 調整大小
+                        image = image.resize((300, 300), Image.Resampling.LANCZOS)
+                        # 保存
+                        image.save(filepath, 'JPEG', quality=85)
+
+                        # 刪除舊頭像
+                        if current_user.avatar_path:
+                            old_avatar = os.path.join(current_app.root_path, 'static', current_user.avatar_path)
+                            if os.path.exists(old_avatar):
+                                os.remove(old_avatar)
+
+                        # 更新數據庫
+                        current_user.avatar_path = f"uploads/avatars/{filename}"
+
+                # 檢查用戶名和郵箱是否被其他用戶使用
+                new_username = request.form.get('username')
+                new_email = request.form.get('email')
+
+                if new_username != current_user.username:
+                    if User.query.filter_by(username=new_username).first():
+                        flash('此用戶名已被使用', 'danger')
+                        return redirect(url_for('auth.profile'))
+
+                if new_email != current_user.email:
+                    if User.query.filter_by(email=new_email).first():
+                        flash('此電子郵件已被註冊', 'danger')
+                        return redirect(url_for('auth.profile'))
+
+                # 更新資料
+                current_user.username = new_username
+                current_user.email = new_email
                 db.session.commit()
                 flash('個人資料已更新', 'success')
+
             except Exception as e:
                 db.session.rollback()
-                flash('更新失敗', 'danger')
-
-            return redirect(url_for('auth.profile'))
+                flash(f'更新失敗: {str(e)}', 'danger')
 
         elif action == 'update_password':
+            # 密碼更新邏輯
             if not current_user.check_password(request.form.get('current_password')):
                 flash('目前密碼不正確', 'danger')
             elif request.form.get('new_password') != request.form.get('confirm_password'):
@@ -122,6 +166,6 @@ def profile():
                     db.session.rollback()
                     flash('更新失敗', 'danger')
 
-            return redirect(url_for('auth.profile'))
+        return redirect(url_for('auth.profile'))
 
     return render_template('auth/profile.html', title='個人資料')

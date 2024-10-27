@@ -2,6 +2,7 @@ from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from .config import Config
+import os
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -14,6 +15,13 @@ def load_user(id):
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+
+    # 配置上傳路徑
+    app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads/avatars')
+    app.config['MAX_CONTENT_LENGTH'] = 1 * 1024 * 1024  # 限制上傳大小為 1MB
+
+    # 確保上傳目錄存在
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
     # 初始化擴展
     db.init_app(app)

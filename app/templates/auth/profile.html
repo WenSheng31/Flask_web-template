@@ -10,33 +10,55 @@
                     <h5 class="card-title mb-0">個人資料</h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ url_for('auth.profile') }}">
+                    <form method="POST" action="{{ url_for('auth.profile') }}" enctype="multipart/form-data">
                         <input type="hidden" name="action" value="update_profile">
-                        
+
                         <div class="row mb-4">
                             <div class="col-auto">
-                                <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center" 
-                                     style="width: 100px; height: 100px; border-radius: 50%; font-size: 2.5rem;">
-                                    {{ current_user.username[0].upper() }}
+                                <div class="position-relative">
+                                    {% if current_user.avatar_path %}
+                                    <img src="{{ url_for('static', filename=current_user.avatar_path) }}"
+                                         class="rounded-circle"
+                                         style="width: 100px; height: 100px; object-fit: cover;"
+                                         alt="用戶頭像">
+                                    {% else %}
+                                    <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                                         style="width: 100px; height: 100px; border-radius: 50%; font-size: 2.5rem;">
+                                        {{ current_user.username[0].upper() }}
+                                    </div>
+                                    {% endif %}
+
+                                    <div class="position-absolute bottom-0 end-0">
+                                        <label for="avatar"
+                                               class="btn btn-light rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                                               style="width: 36px; height: 36px; padding: 0; cursor: pointer; margin-right: -8px; margin-bottom: -8px;">
+                                            <i class="bi bi-camera" style="font-size: 1.2rem;"></i>
+                                        </label>
+                                        <input type="file" id="avatar" name="avatar"
+                                               class="d-none" accept="image/*"
+                                               onchange="previewImage(this);">
+                                    </div>
                                 </div>
                             </div>
                             <div class="col">
                                 <h5 class="mb-1">{{ current_user.username }}</h5>
                                 <p class="text-muted mb-0">{{ current_user.email }}</p>
-                                <small class="text-muted">加入時間：{{ current_user.created_at.strftime('%Y-%m-%d') }}</small>
+                                <small class="text-muted">加入時間：{{
+                                        current_user.created_at.strftime('%Y-%m-%d')
+                                    }}</small>
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">用戶名</label>
-                            <input type="text" class="form-control" name="username" 
+                            <input type="text" class="form-control" name="username"
                                    value="{{ current_user.username }}" required>
                             <div class="form-text">用戶名將顯示在您的個人檔案中</div>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">電子郵件</label>
-                            <input type="email" class="form-control" name="email" 
+                            <input type="email" class="form-control" name="email"
                                    value="{{ current_user.email }}" required>
                             <div class="form-text">用於接收通知和重要更新</div>
                         </div>
@@ -56,7 +78,7 @@
                 <div class="card-body">
                     <form method="POST" action="{{ url_for('auth.profile') }}">
                         <input type="hidden" name="action" value="update_password">
-                        
+
                         <div class="mb-3">
                             <label class="form-label">目前密碼</label>
                             <input type="password" class="form-control" name="current_password" required>
@@ -86,17 +108,58 @@
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // 如果有 Flash 消息，自動隱藏
-    var alerts = document.querySelectorAll('.alert');
-    alerts.forEach(function(alert) {
-        setTimeout(function() {
-            alert.classList.add('fade');
-            setTimeout(function() {
-                alert.remove();
-            }, 150);
-        }, 3000);
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+
+            // 檢查文件大小
+            if (file.size > 1024 * 1024) {
+                alert('圖片大小不能超過 1MB');
+                input.value = '';
+                return;
+            }
+
+            // 檢查文件類型
+            if (!file.type.startsWith('image/')) {
+                alert('請上傳圖片文件');
+                input.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const avatar = input.closest('.position-relative').querySelector('img');
+                if (avatar) {
+                    avatar.src = e.target.result;
+                } else {
+                    const avatarCircle = input.closest('.position-relative').querySelector('.avatar-circle');
+                    const newAvatar = document.createElement('img');
+                    newAvatar.src = e.target.result;
+                    newAvatar.classList.add('rounded-circle');
+                    newAvatar.style.width = '100px';
+                    newAvatar.style.height = '100px';
+                    newAvatar.style.objectFit = 'cover';
+                    avatarCircle.replaceWith(newAvatar);
+                }
+            }
+            reader.readAsDataURL(file);
+
+            // 自動提交表單
+            input.closest('form').submit();
+        }
+    }
+
+    // Flash 消息自動隱藏
+    document.addEventListener('DOMContentLoaded', function () {
+        var alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function (alert) {
+            setTimeout(function () {
+                alert.classList.add('fade');
+                setTimeout(function () {
+                    alert.remove();
+                }, 150);
+            }, 3000);
+        });
     });
-});
 </script>
 {% endblock %}

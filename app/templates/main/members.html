@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">會員列表</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-4">
+                {% for user in users %}
+                <div class="col-md-4 col-lg-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <!-- 用戶頭像 -->
+                            <div class="mb-3">
+                                {% if user.avatar_path %}
+                                <img src="{{ url_for('static', filename=user.avatar_path) }}"
+                                     class="rounded-circle border"
+                                     style="width: 80px; height: 80px; object-fit: cover;"
+                                     alt="{{ user.username }}的頭像">
+                                {% else %}
+                                <div class="avatar-circle mx-auto bg-primary text-white d-flex align-items-center justify-content-center"
+                                     style="width: 80px; height: 80px; border-radius: 50%; font-size: 2rem;">
+                                    {{ user.username[0].upper() }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- 用戶資訊 -->
+                            <h6 class="card-title mb-1">{{ user.username }}</h6>
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-clock"></i>
+                                加入時間：{{ user.created_at.strftime('%Y-%m-%d') }}
+                            </p>
+
+                            <!-- 可選：顯示更多資訊 -->
+                            {% if user.is_active %}
+                            <span class="badge bg-success rounded-pill">
+                                <i class="bi bi-check-circle-fill"></i> 活躍
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12 text-center py-5">
+                    <p class="text-muted mb-0">目前還沒有會員</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% if pagination and pagination.pages > 1 %}
+            <div class="d-flex justify-content-center mt-4">
+                <nav aria-label="會員列表分頁">
+                    <ul class="pagination">
+                        {% for page in pagination.iter_pages() %}
+                        {% if page %}
+                        <li class="page-item {% if page == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('main.members', page=page) }}">{{ page }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 如果需要在此頁面添加特殊的 JavaScript，可以在這裡添加
+</script>
+{% endblock %}

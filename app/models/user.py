@@ -12,6 +12,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), unique=True, index=True, nullable=False)
     email = db.Column(db.String(120), unique=True, index=True, nullable=False)
     password_hash = db.Column(db.String(128))
+    avatar_path = db.Column(db.String(200))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime, default=datetime.utcnow)  # 新增此欄位
     is_active = db.Column(db.Boolean, default=True)

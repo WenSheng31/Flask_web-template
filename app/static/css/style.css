@@ -47,6 +47,22 @@ main {
     box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
 }
 
+/* Profile */
+.avatar-upload-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    cursor: pointer;
+    margin-right: -5px;
+    margin-bottom: -5px;
+    transition: all 0.2s ease;
+}
+
+.avatar-upload-btn:hover {
+    background-color: #e9ecef;
+    transform: scale(1.1);
+}
+
 /* 響應式調整 */
 @media (max-width: 768px) {
     .display-4 {
