@@ -18,6 +18,11 @@ class User(UserMixin, db.Model):
     is_active = db.Column(db.Boolean, default=True)
     is_admin = db.Column(db.Boolean, default=False)
 
+    # 獲取用戶的文章數量
+    @property
+    def post_count(self):
+        return Post.query.filter_by(user_id=self.id).count()
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
@@ -26,3 +31,5 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return f'<User {self.username}>'
+
+

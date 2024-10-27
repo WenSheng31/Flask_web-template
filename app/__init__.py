@@ -34,10 +34,17 @@ def create_app(config_class=Config):
     from app.routes.main import main_bp
     from app.routes.settings import settings_bp
     from app.routes.auth import auth_bp
+    from app.routes.post import post_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(settings_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(post_bp)
+
+    # 添加自定義過濾器
+    @app.template_filter('nl2br')
+    def nl2br_filter(s):
+        return s.replace('\n', '<br>') if s else ''
 
     # 確保錯誤處理模板存在
     @app.errorhandler(404)

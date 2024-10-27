@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <!-- 文章標題和作者資訊 -->
+                    <div class="d-flex align-items-center mb-4">
+                        {% if post.author.avatar_path %}
+                        <img src="{{ url_for('static', filename=post.author.avatar_path) }}"
+                             class="rounded-circle me-3"
+                             style="width: 50px; height: 50px; object-fit: cover;"
+                             alt="{{ post.author.username }}的頭像">
+                        {% else %}
+                        <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center me-3"
+                             style="width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem;">
+                            {{ post.author.username[0].upper() }}
+                        </div>
+                        {% endif %}
+                        <div>
+                            <h6 class="mb-0">{{ post.author.username }}</h6>
+                            <small class="text-muted">
+                                發布於 {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                {% if post.updated_at != post.created_at %}
+                                • 更新於 {{ post.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- 文章標題 -->
+                    <h2 class="card-title mb-4">{{ post.title }}</h2>
+
+                    <!-- 文章內容 -->
+                    <div class="card-text mb-4">
+                        {{ post.content|nl2br }}
+                    </div>
+
+                    <!-- 操作按鈕 -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('post.index') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> 返回列表
+                        </a>
+                        {% if current_user == post.author %}
+                        <div class="btn-group">
+                            <a href="{{ url_for('post.edit', id=post.id) }}" class="btn btn-outline-primary">
+                                <i class="bi bi-pencil"></i> 編輯
+                            </a>
+                            <button type="button" class="btn btn-outline-danger" onclick="confirmDelete()">
+                                <i class="bi bi-trash"></i> 刪除
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 刪除確認對話框 -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">確認刪除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                確定要刪除這篇文章嗎？此操作無法復原。
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <form action="{{ url_for('post.delete', id=post.id) }}" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">確定刪除</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function confirmDelete() {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+</script>
+{% endblock %}

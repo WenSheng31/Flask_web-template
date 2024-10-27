@@ -2,7 +2,7 @@
 <nav class="navbar navbar-expand-lg bg-white border-bottom">
     <div class="container">
         <a class="navbar-brand fw-bold text-primary" href="{{ url_for('main.index') }}">
-            範例網頁
+            EVO論壇
         </a>
 
         <button class="navbar-toggler border-0" type="button"
@@ -16,6 +16,12 @@
                     <a class="nav-link px-3 {% if request.endpoint == 'main.index' %}fw-medium text-primary{% endif %}"
                        href="{{ url_for('main.index') }}">
                         首頁
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-3 {% if request.endpoint.startswith('post.') %}fw-medium text-primary{% endif %}"
+                       href="{{ url_for('post.index') }}">
+                        <i class="bi bi-file-text"></i> 文章列表
                     </a>
                 </li>
                 <li class="nav-item">
