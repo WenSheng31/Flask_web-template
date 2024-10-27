@@ -19,6 +19,15 @@
                     </a>
                 </li>
             </ul>
+
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link px-3 {% if request.endpoint == 'settings.settings' %}fw-medium text-primary{% endif %}"
+                       href="{{ url_for('settings.settings') }}">
+                       <i class="bi bi-gear"></i> 設定
+                    </a>
+                </li>
+            </ul>
         </div>
     </div>
 </nav>
