@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- 個人資料卡片 -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">個人資料</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('auth.profile') }}">
+                        <input type="hidden" name="action" value="update_profile">
+                        
+                        <div class="row mb-4">
+                            <div class="col-auto">
+                                <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center" 
+                                     style="width: 100px; height: 100px; border-radius: 50%; font-size: 2.5rem;">
+                                    {{ current_user.username[0].upper() }}
+                                </div>
+                            </div>
+                            <div class="col">
+                                <h5 class="mb-1">{{ current_user.username }}</h5>
+                                <p class="text-muted mb-0">{{ current_user.email }}</p>
+                                <small class="text-muted">加入時間：{{ current_user.created_at.strftime('%Y-%m-%d') }}</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">用戶名</label>
+                            <input type="text" class="form-control" name="username" 
+                                   value="{{ current_user.username }}" required>
+                            <div class="form-text">用戶名將顯示在您的個人檔案中</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">電子郵件</label>
+                            <input type="email" class="form-control" name="email" 
+                                   value="{{ current_user.email }}" required>
+                            <div class="form-text">用於接收通知和重要更新</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> 保存變更
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 密碼修改卡片 -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">修改密碼</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('auth.profile') }}">
+                        <input type="hidden" name="action" value="update_password">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">目前密碼</label>
+                            <input type="password" class="form-control" name="current_password" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">新密碼</label>
+                            <input type="password" class="form-control" name="new_password" required>
+                            <div class="form-text">密碼必須包含至少8個字元</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">確認新密碼</label>
+                            <input type="password" class="form-control" name="confirm_password" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-key"></i> 更新密碼
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 如果有 Flash 消息，自動隱藏
+    var alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            alert.classList.add('fade');
+            setTimeout(function() {
+                alert.remove();
+            }, 150);
+        }, 3000);
+    });
+});
+</script>
+{% endblock %}
