@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <!-- 左側導航 -->
+    <div class="col-md-3">
+        <div class="card shadow-sm mb-4">
+            <div class="list-group list-group-flush">
+                <button class="list-group-item list-group-item-action active"
+                        data-bs-toggle="list"
+                        href="#overview">
+                    <i class="bi bi-grid-1x2"></i> 總覽
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右側內容 -->
+    <div class="col-md-7">
+        <div class="tab-content">
+            <!-- 總覽面板 -->
+            <div class="tab-pane fade show active" id="overview">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">系統總覽</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-sm-6">
+                                <div class="border rounded p-3 text-center">
+                                    <h3 class="mb-0">{{ stats.total_users }}</h3>
+                                    <small>總用戶數</small>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="border rounded p-3 text-center">
+                                    <h3 class="mb-0">{{ stats.active_users }}</h3>
+                                    <small>活躍用戶</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <h6 class="fw-bold">系統資訊</h6>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <td class="w-25">版本</td>
+                                    <td>{{ stats.system_version }}</td>
+                                </tr>
+                                <tr>
+                                    <td>最後更新</td>
+                                    <td>{{ stats.last_update }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化 Bootstrap 的 tab 功能
+    var triggerTabList = [].slice.call(document.querySelectorAll('[data-bs-toggle="list"]'));
+    triggerTabList.forEach(function(triggerEl) {
+        new bootstrap.Tab(triggerEl);
+    });
+});
+</script>
+{% endblock %}

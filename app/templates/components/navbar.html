@@ -18,6 +18,58 @@
                        首頁
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link px-3 {% if request.endpoint == 'main.about' %}fw-medium text-primary{% endif %}"
+                       href="{{ url_for('main.about') }}">
+                       關於我們
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ms-auto">
+                {% if current_user.is_authenticated %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link px-3 dropdown-toggle" href="#"
+                       id="navbarDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle"></i>
+                        {{ current_user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                        <li>
+                            <a class="dropdown-item {% if request.endpoint == 'auth.profile' %}fw-medium text-primary{% endif %}"
+                               href="{{ url_for('auth.profile') }}">
+                                <i class="bi bi-person me-2"></i>個人資料
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if request.endpoint == 'settings.index' %}fw-medium text-primary{% endif %}"
+                               href="{{ url_for('settings.index') }}">
+                                <i class="bi bi-gear me-2"></i>設定
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
+                                <i class="bi bi-box-arrow-right me-2"></i>登出
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link px-3 {% if request.endpoint == 'auth.login' %}fw-medium text-primary{% endif %}"
+                       href="{{ url_for('auth.login') }}">
+                        <i class="bi bi-box-arrow-in-right"></i> 登入
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-3 {% if request.endpoint == 'auth.register' %}fw-medium text-primary{% endif %}"
+                       href="{{ url_for('auth.register') }}">
+                        <i class="bi bi-person-plus"></i> 註冊
+                    </a>
+                </li>
+                {% endif %}
             </ul>
         </div>
     </div>

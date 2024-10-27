@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-
+{% if current_user.is_authenticated %}
+<h1>你好! {{ current_user.username }}</h1>
+{% endif %}
 {% endblock %}
