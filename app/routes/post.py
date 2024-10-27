@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from app import db
 from app.models.post import Post
 
+
 post_bp = Blueprint('post', __name__, url_prefix='/posts')
 
 

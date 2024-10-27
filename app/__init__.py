@@ -4,8 +4,10 @@ from flask_login import LoginManager
 from .config import Config
 import os
 
+
 db = SQLAlchemy()
 login_manager = LoginManager()
+
 
 @login_manager.user_loader
 def load_user(id):
@@ -48,13 +50,12 @@ def create_app(config_class=Config):
 
     # 確保錯誤處理模板存在
     @app.errorhandler(404)
-    def not_found_error(error):
-        return render_template('errors/404.html'), 404
+    def page_not_found(e):
+        return render_template('errors/404.html', title='頁面未找到'), 404
 
     @app.errorhandler(500)
-    def internal_error(error):
-        db.session.rollback()
-        return render_template('errors/500.html'), 500
+    def internal_server_error(e):
+        return render_template('errors/500.html', title='服務器錯誤'), 500
 
     # 創建所有數據表
     with app.app_context():

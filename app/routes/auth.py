@@ -9,6 +9,7 @@ from datetime import datetime
 import os
 import time
 
+
 auth_bp = Blueprint('auth', __name__)
 
 

@@ -1,7 +1,28 @@
+<!-- templates/errors/404.html -->
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>找不到頁面</h1>
-    <p>請檢查網址是否正確</p>
-    <p><a href="{{ url_for('main.index') }}">返回首頁</a></p>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="card shadow-sm">
+                <div class="card-body py-5">
+                    <h1 class="display-1 text-muted">404</h1>
+                    <h2 class="h4 mb-4">找不到頁面</h2>
+                    <p class="text-muted mb-4">
+                        抱歉，您要找的頁面不存在或已被移除。
+                    </p>
+                    <div class="d-grid gap-2 col-6 mx-auto">
+                        <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+                            <i class="bi bi-house"></i> 返回首頁
+                        </a>
+                        <button onclick="history.back()" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> 返回上一頁
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

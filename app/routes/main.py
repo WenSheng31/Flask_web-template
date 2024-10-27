@@ -1,9 +1,8 @@
 from flask import render_template, Blueprint, request
 from app.models.user import User
 from app.models.post import Post
-from flask_login import current_user
-from datetime import datetime, timedelta
-from sqlalchemy import func
+from datetime import datetime
+
 
 main_bp = Blueprint('main', __name__, url_prefix='/')
 

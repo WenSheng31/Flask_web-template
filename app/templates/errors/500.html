@@ -1,7 +1,29 @@
+<!-- templates/errors/500.html -->
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>發生錯誤</h1>
-    <p>抱歉，發生了一些問題。請稍後再試。</p>
-    <p><a href="{{ url_for('main.index') }}">返回首頁</a></p>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="card shadow-sm">
+                <div class="card-body py-5">
+                    <h1 class="display-1 text-muted">500</h1>
+                    <h2 class="h4 mb-4">服務器錯誤</h2>
+                    <p class="text-muted mb-4">
+                        抱歉，服務器出現了問題。<br>
+                        請稍後再試或聯繫管理員。
+                    </p>
+                    <div class="d-grid gap-2 col-6 mx-auto">
+                        <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+                            <i class="bi bi-house"></i> 返回首頁
+                        </a>
+                        <button onclick="history.back()" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> 返回上一頁
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

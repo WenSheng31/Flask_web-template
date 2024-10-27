@@ -4,7 +4,9 @@ from app import db
 from app.models.user import User
 from datetime import datetime, timedelta
 
+
 settings_bp = Blueprint('settings', __name__, url_prefix='/settings')
+
 
 def get_system_stats():
     """獲取系統統計數據"""
