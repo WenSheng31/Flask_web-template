@@ -1,9 +1,8 @@
 {% extends "base.html" %}
-
 {% block content %}
 <div class="container py-4">
     {% if current_user.is_authenticated %}
-    <!-- 歡迎區塊 - 僅登入用戶可見 -->
+    <!-- 用戶歡迎卡片 -->
     <div class="card bg-primary text-white shadow-sm mb-4">
         <div class="card-body">
             <div class="row align-items-center">
@@ -11,8 +10,7 @@
                     {% if current_user.avatar_path %}
                     <img src="{{ url_for('static', filename=current_user.avatar_path) }}"
                          class="rounded-circle border border-2 border-white"
-                         style="width: 80px; height: 80px; object-fit: cover;"
-                         alt="{{ current_user.username }}的頭像">
+                         style="width: 80px; height: 80px; object-fit: cover;">
                     {% else %}
                     <div class="avatar-circle bg-white text-primary d-flex align-items-center justify-content-center"
                          style="width: 80px; height: 80px; border-radius: 50%; font-size: 2rem;">
@@ -22,27 +20,143 @@
                 </div>
                 <div class="col">
                     <h4 class="mb-1">歡迎回來，{{ current_user.username }}！</h4>
-                    <p class="mb-0 opacity-75">
-                        <i class="bi bi-clock"></i>
-                        上次登入時間：{{
+                    <div class="small">
+                        <i class="bi bi-clock"></i> 上次登入時間：{{
                             current_user.last_login.strftime('%Y-%m-%d %H:%M') if current_user.last_login else '首次登入'
                         }}
-                    </p>
+                    </div>
+                    <div class="mt-2">
+                        <a href="{{ url_for('auth.profile') }}" class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-person-gear"></i> 管理個人資料
+                        </a>
+                        <a href="{{ url_for('post.create') }}" class="btn btn-outline-light btn-sm ms-2">
+                            <i class="bi bi-plus-lg"></i> 發布文章
+                        </a>
+                    </div>
                 </div>
-                <div class="col-auto">
-                    <a href="{{ url_for('auth.profile') }}" class="btn btn-outline-light">
-                        <i class="bi bi-person-gear"></i> 管理個人資料
-                    </a>
+                <div class="col-md-3 text-end">
+                    <div class="border-start border-white-50 ps-3">
+                        <div class="mb-2">
+                            <div class="small text-white-50">我的文章</div>
+                            <div class="h4 mb-0">{{ user_stats.posts_count }}</div>
+                        </div>
+                        <div>
+                            <div class="small text-white-50">收到的讚</div>
+                            <div class="h4 mb-0">{{ user_stats.received_likes }}</div>
+                        </div>
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>
     {% endif %}
 
-    <!-- 主要內容區 -->
     <div class="row g-4">
-        <!-- 左側主要內容 -->
+        <!-- 左側主要內容區 -->
         <div class="col-lg-8">
+            <!-- 熱門文章輪播 -->
+            {% if latest_posts %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-star-fill text-warning"></i> 精選文章
+                    </h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-secondary me-1" data-bs-target="#featuredPosts"
+                                data-bs-slide="prev">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" data-bs-target="#featuredPosts"
+                                data-bs-slide="next">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div id="featuredPosts" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            {% for post in latest_posts[:3] %}
+                            <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                <div class="p-4" style="height: 400px; overflow: hidden;">
+                                    <div class="d-flex flex-column h-100">
+                                        <!-- 作者資訊 -->
+                                        <div class="d-flex align-items-center mb-3">
+                                            {% if post.author.avatar_path %}
+                                            <img src="{{ url_for('static', filename=post.author.avatar_path) }}"
+                                                 class="rounded-circle me-2"
+                                                 style="width: 40px; height: 40px; object-fit: cover;">
+                                            {% else %}
+                                            <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
+                                                 style="width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem;">
+                                                {{ post.author.username[0].upper() }}
+                                            </div>
+                                            {% endif %}
+                                            <div>
+                                                <div class="fw-medium">{{ post.author.username }}</div>
+                                                <div class="small text-muted">
+                                                    {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- 文章內容 -->
+                                        <div class="flex-grow-1 overflow-hidden">
+                                            <h4 class="card-title mb-3">
+                                                <a href="{{ url_for('post.show', id=post.id) }}"
+                                                   class="text-decoration-none text-dark">
+                                                    {{ post.title }}
+                                                </a>
+                                            </h4>
+                                            <p class="card-text text-muted"
+                                               style="display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden;">
+                                                {{ post.content }}
+                                            </p>
+                                        </div>
+
+                                        <!-- 文章統計 -->
+                                        <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                                            <div class="d-flex align-items-center text-muted">
+                                                <div class="me-3">
+                                                    <i class="bi bi-heart-fill text-danger"></i>
+                                                    <span class="ms-1">{{ post.like_count }}</span>
+                                                </div>
+                                                <div class="me-3">
+                                                    <i class="bi bi-chat-fill"></i>
+                                                    <span class="ms-1">{{ post.comments_count }}</span>
+                                                </div>
+                                                <div>
+                                                    <i class="bi bi-eye-fill"></i>
+                                                    <span class="ms-1">{{
+                                                            post.view_count if post.view_count else 0
+                                                        }}</span>
+                                                </div>
+                                            </div>
+                                            <a href="{{ url_for('post.show', id=post.id) }}"
+                                               class="btn btn-primary btn-sm">
+                                                閱讀更多 <i class="bi bi-arrow-right"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="carousel-indicators" style="bottom: 0;">
+                            {% for post in latest_posts[:3] %}
+                            <button type="button"
+                                    data-bs-target="#featuredPosts"
+                                    data-bs-slide-to="{{ loop.index0 }}"
+                                    class="{% if loop.first %}active{% endif %}"
+                                    style="background-color: #0d6efd;"></button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 最新文章列表 -->
             <div class="card shadow-sm">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">最新文章</h5>
@@ -50,53 +164,84 @@
                         查看全部 <i class="bi bi-arrow-right"></i>
                     </a>
                 </div>
+
                 <div class="card-body">
                     {% if latest_posts %}
                     {% for post in latest_posts %}
                     <div class="card mb-3 border-0">
                         <div class="card-body">
-                            <div class="d-flex align-items-center mb-2">
-                                {% if post.author.avatar_path %}
-                                <img src="{{ url_for('static', filename=post.author.avatar_path) }}"
-                                     class="rounded-circle me-2"
-                                     style="width: 32px; height: 32px; object-fit: cover;"
-                                     alt="{{ post.author.username }}的頭像">
-                                {% else %}
-                                <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
-                                     style="width: 32px; height: 32px; border-radius: 50%; font-size: 1rem;">
-                                    {{ post.author.username[0].upper() }}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="d-flex align-items-center">
+                                    {% if post.author.avatar_path %}
+                                    <img src="{{ url_for('static', filename=post.author.avatar_path) }}"
+                                         class="rounded-circle me-2"
+                                         style="width: 32px; height: 32px; object-fit: cover;">
+                                    {% else %}
+                                    <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
+                                         style="width: 32px; height: 32px; border-radius: 50%; font-size: 1rem;">
+                                        {{ post.author.username[0].upper() }}
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <div class="fw-medium">{{ post.author.username }}</div>
+                                        <small class="text-muted">{{
+                                                post.created_at.strftime('%Y-%m-%d %H:%M')
+                                            }}</small>
+                                    </div>
                                 </div>
-                                {% endif %}
-                                <div class="small">
-                                    <span class="fw-medium">{{ post.author.username }}</span>
-                                    <span class="text-muted">• {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                                <div class="d-flex align-items-center text-muted small">
+                                    <div class="me-3">
+                                        <i class="bi bi-heart-fill text-danger"></i>
+                                        {{ post.like_count }}
+                                    </div>
+                                    <div>
+                                        <i class="bi bi-chat-fill"></i>
+                                        {{ post.comments_count }}
+                                    </div>
                                 </div>
                             </div>
-                            <h6 class="card-title mb-2">
-                                <a href="{{ url_for('post.show', id=post.id) }}"
-                                   class="text-decoration-none text-dark">
+
+                            <h6 class="card-title">
+                                <a href="{{ url_for('post.show', id=post.id) }}" class="text-decoration-none text-dark">
                                     {{ post.title }}
                                 </a>
                             </h6>
-                            <p class="card-text small text-muted mb-0">
-                                {{ post.content[:100] }}{% if post.content|length > 100 %}...{% endif %}
-                            </p>
-                        </div>
-                        {% if not loop.last %}
 
-                        {% endif %}
+                            <p class="card-text small text-muted">
+                                {{ post.content[:150] }}{% if post.content|length > 150 %}...{% endif %}
+                            </p>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{ url_for('post.show', id=post.id) }}" class="btn btn-outline-primary btn-sm">
+                                    閱讀更多
+                                </a>
+                                {% if current_user == post.author %}
+                                <div class="btn-group">
+                                    <a href="{{ url_for('post.edit', id=post.id) }}"
+                                       class="btn btn-outline-secondary btn-sm">
+                                        <i class="bi bi-pencil"></i> 編輯
+                                    </a>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal"
+                                            data-bs-target="#deleteModal" data-post-id="{{ post.id }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
+                    {% if not loop.last %}
+                    <hr class="my-3">
+                    {% endif %}
                     {% endfor %}
                     {% else %}
                     <div class="text-center py-5">
-                        <i class="bi bi-file-text" style="font-size: 2rem;"></i>
-                        <p class="text-muted mt-2 mb-0">目前還沒有文章</p>
+                        <i class="bi bi-journal-text display-4 text-muted"></i>
+                        <p class="mt-3 mb-0">目前還沒有文章</p>
                         {% if current_user.is_authenticated %}
-                        <div class="mt-3">
-                            <a href="{{ url_for('post.create') }}" class="btn btn-primary">
-                                <i class="bi bi-plus-lg"></i> 發布第一篇文章
-                            </a>
-                        </div>
+                        <a href="{{ url_for('post.create') }}" class="btn btn-primary mt-3">
+                            <i class="bi bi-plus-lg"></i> 發布第一篇文章
+                        </a>
                         {% endif %}
                     </div>
                     {% endif %}
@@ -109,34 +254,71 @@
             <!-- 系統資訊卡片 -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white">
-                    <h5 class="card-title mb-0">系統資訊</h5>
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-info-circle-fill text-primary"></i> 系統資訊
+                    </h5>
                 </div>
                 <div class="card-body">
                     <div class="list-group list-group-flush">
                         <div class="list-group-item px-0">
-                            <div class="d-flex justify-content-between">
-                                <span><i class="bi bi-people"></i> 總會員數</span>
-                                <span class="fw-bold">{{ total_users }}</span>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-people"></i> 總會員數
+                                </div>
+                                <span class="badge bg-primary rounded-pill">{{ total_users }}</span>
                             </div>
                         </div>
                         <div class="list-group-item px-0">
-                            <div class="d-flex justify-content-between">
-                                <span><i class="bi bi-person-add"></i> 本月新增</span>
-                                <span class="fw-bold">{{ new_users_this_month }}</span>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-person-plus"></i> 本月新增
+                                </div>
+                                <span class="badge bg-success rounded-pill">{{ new_users_this_month }}</span>
                             </div>
                         </div>
                         <div class="list-group-item px-0">
-                            <div class="d-flex justify-content-between">
-                                <span><i class="bi bi-file-text"></i> 總文章數</span>
-                                <span class="fw-bold">{{ total_posts }}</span>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-file-text"></i> 總文章數
+                                </div>
+                                <span class="badge bg-info rounded-pill">{{ total_posts }}</span>
                             </div>
                         </div>
                         <div class="list-group-item px-0">
-                            <div class="d-flex justify-content-between">
-                                <span><i class="bi bi-clock-history"></i> 最後更新</span>
-                                <span>{{ last_update }}</span>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-clock-history"></i> 最後更新
+                                </div>
+                                <small class="text-muted">{{ last_update }}</small>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 活躍用戶卡片 -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-star-fill text-warning"></i> 活躍用戶
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for user in active_users[:12] %}
+                        <a href="#" class="text-decoration-none" data-bs-toggle="tooltip" title="{{ user.username }}">
+                            {% if user.avatar_path %}
+                            <img src="{{ url_for('static', filename=user.avatar_path) }}"
+                                 class="rounded-circle border"
+                                 style="width: 40px; height: 40px; object-fit: cover;">
+                            {% else %}
+                            <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                                 style="width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem;">
+                                {{ user.username[0].upper() }}
+                            </div>
+                            {% endif %}
+                        </a>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -144,7 +326,9 @@
             <!-- 快速連結卡片 -->
             <div class="card shadow-sm">
                 <div class="card-header bg-white">
-                    <h5 class="card-title mb-0">快速連結</h5>
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-link-45deg text-primary"></i> 快速連結
+                    </h5>
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
@@ -154,7 +338,7 @@
                         </a>
                         {% endif %}
                         <a href="{{ url_for('post.index') }}" class="btn btn-outline-primary">
-                            <i class="bi bi-file-text"></i> 所有文章
+                            <i class="bi bi-journal-text"></i> 所有文章
                         </a>
                         <a href="{{ url_for('main.members') }}" class="btn btn-outline-primary">
                             <i class="bi bi-people"></i> 會員列表
@@ -173,4 +357,50 @@
         </div>
     </div>
 </div>
+
+<!-- 刪除文章確認對話框 -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">確認刪除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">確定要刪除這篇文章嗎？此操作無法復原。</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">確定刪除</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 初始化工具提示
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
+    // 處理刪除文章
+    document.getElementById('deleteModal').addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const postId = button.getAttribute('data-post-id');
+        const form = document.getElementById('deleteForm');
+        form.action = `/posts/${postId}/delete`;
+    });
+
+    // 初始化輪播
+    var carousel = new bootstrap.Carousel(document.getElementById('featuredPosts'), {
+        interval: 5000,
+        wrap: true,
+        touch: true
+    });
+</script>
 {% endblock %}
