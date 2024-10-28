@@ -1,6 +1,7 @@
 # 第三方套件導入
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
+from app.models.comment import Comment
 
 # 本地應用導入
 from app import db
@@ -85,19 +86,25 @@ def create():
         content = request.form.get('content', '').strip()
 
         # 驗證輸入
-        is_valid, error_message = validate_post_data(title, content)
-        if not is_valid:
-            flash(error_message, 'danger')
+        if not title:
+            flash('標題不能為空', 'danger')
+            return redirect(url_for('post.create'))
+        if not content:
+            flash('內容不能為空', 'danger')
             return redirect(url_for('post.create'))
 
-        # 創建文章
-        @handle_db_operation('發布')
-        def create_post():
+        try:
+            # 創建文章
             post = Post(title=title, content=content, author=current_user)
             db.session.add(post)
-            return redirect(url_for('post.show', id=post.id))
+            db.session.commit()  # 先提交以獲取 post.id
 
-        return create_post()
+            flash('文章發布成功！', 'success')
+            return redirect(url_for('post.show', id=post.id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'文章發布失敗: {str(e)}', 'danger')
+            return redirect(url_for('post.create'))
 
     return render_template('posts/create.html', title='發布文章')
 
@@ -164,3 +171,79 @@ def delete(id):
         return redirect(url_for('post.index'))
 
     return delete_post()
+
+
+@post_bp.route('/<int:post_id>/comments', methods=['POST'])
+@login_required
+def create_comment(post_id):
+    """創建留言"""
+    post = Post.query.get_or_404(post_id)
+    content = request.form.get('content', '').strip()
+    parent_id = request.form.get('parent_id', type=int)
+
+    if not content:
+        flash('留言內容不能為空', 'danger')
+        return redirect(url_for('post.show', id=post_id))
+
+    comment = Comment(
+        content=content,
+        author=current_user,
+        post=post,
+        parent_id=parent_id
+    )
+
+    try:
+        db.session.add(comment)
+        db.session.commit()
+        flash('留言成功', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('留言失敗', 'danger')
+
+    return redirect(url_for('post.show', id=post_id))
+
+
+@post_bp.route('/comments/<int:comment_id>', methods=['DELETE'])
+@login_required
+def delete_comment(comment_id):
+    """刪除留言"""
+    comment = Comment.query.get_or_404(comment_id)
+
+    if comment.author != current_user:
+        return jsonify({'success': False, 'message': '無權限刪除此留言'}), 403
+
+    try:
+        db.session.delete(comment)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': '刪除失敗'}), 500
+
+
+@post_bp.route('/<int:post_id>/like', methods=['POST'])
+@login_required
+def toggle_like(post_id):
+    """切換按讚狀態"""
+    post = Post.query.get_or_404(post_id)
+
+    try:
+        if current_user.is_liking(post):
+            current_user.unlike_post(post)
+            db.session.commit()
+            return jsonify({
+                'success': True,
+                'liked': False,
+                'count': post.like_count
+            })
+        else:
+            current_user.like_post(post)
+            db.session.commit()
+            return jsonify({
+                'success': True,
+                'liked': True,
+                'count': post.like_count
+            })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': '操作失敗'}), 500

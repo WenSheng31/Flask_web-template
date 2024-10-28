@@ -2,10 +2,13 @@ from app import db, login_manager
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from .like import Like
+
 
 @login_manager.user_loader
 def load_user(id):
     return User.query.get(int(id))
+
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -18,10 +21,27 @@ class User(UserMixin, db.Model):
     is_active = db.Column(db.Boolean, default=True)
     is_admin = db.Column(db.Boolean, default=False)
 
-    # 獲取用戶的文章數量
-    @property
-    def post_count(self):
-        return Post.query.filter_by(user_id=self.id).count()
+    def like_post(self, post):
+        """按讚文章"""
+        if not self.is_liking(post):
+            like = Like(user_id=self.id, post_id=post.id)
+            db.session.add(like)
+
+    def unlike_post(self, post):
+        """取消按讚"""
+        like = Like.query.filter_by(
+            user_id=self.id,
+            post_id=post.id
+        ).first()
+        if like:
+            db.session.delete(like)
+
+    def is_liking(self, post):
+        """檢查是否已按讚"""
+        return Like.query.filter_by(
+            user_id=self.id,
+            post_id=post.id
+        ).first() is not None
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -31,5 +51,3 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return f'<User {self.username}>'
-
-
