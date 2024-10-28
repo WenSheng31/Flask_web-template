@@ -1,6 +1,6 @@
-# Flask Web 應用範本
+# Flask Web 應用專案
 
-這是一個基於 Flask 框架開發的網站專案，提供了完整的用戶系統和文章管理功能。
+這是一個基於 Flask 框架開發的網站專案，提供了完整的用戶系統、文章管理、留言互動和按讚功能。
 
 ## 功能特點
 
@@ -15,21 +15,25 @@
 ### 文章系統
 - 發布/編輯/刪除文章
 - 文章列表（分頁）
+- 文章搜索功能
 - 文章詳情頁面
 - 作者資訊顯示
 - 修改時間記錄
 
-### 會員管理
+### 互動功能
+- 文章留言
+- 留言回覆
+- 文章按讚
+- 按讚狀態追蹤
+- 使用者互動記錄
+
+### 系統管理
 - 會員列表頁面
 - 會員資料顯示
 - 活躍用戶統計
 - 新增會員統計
-
-### 設定頁面
 - 系統總覽
-- 個人資料設定
-- 密碼修改
-- 其他設定選項
+- 個人設定
 
 ## 技術架構
 
@@ -39,10 +43,13 @@
 - Flask-Login（用戶認證）
 - Pillow（圖片處理）
 - python-dotenv（環境變數）
+- Blueprint（模組化路由）
+- Service Layer（業務邏輯層）
 
 ### 前端框架
 - Bootstrap 5.3.2
 - Bootstrap Icons
+- JavaScript（AJAX）
 - 自適應設計
 
 ### 資料庫
@@ -52,35 +59,45 @@
 ```
 project/
 ├── app/
-│   ├── __init__.py
-│   ├── config.py
-│   ├── models/
-│   │   ├── __init__.py
-│   │   ├── user.py
-│   │   └── post.py
-│   ├── routes/
-│   │   ├── __init__.py
-│   │   ├── main.py
-│   │   ├── auth.py
-│   │   ├── post.py
-│   │   └── settings.py
-│   ├── static/
-│   │   ├── css/
-│   │   ├── js/
-│   │   ├── uploads/
-│   │   │   └── avatars/
-│   │   └── icon/
-│   └── templates/
-│       ├── auth/
-│       ├── components/
-│       ├── errors/
-│       ├── main/
-│       ├── pages/
-│       ├── posts/
-│       └── base.html
-├── requirements.txt
-├── run.py
-└── .env
+│   ├── models/              # 數據模型
+│   │   ├── user.py         # 用戶模型
+│   │   ├── post.py         # 文章模型
+│   │   ├── comment.py      # 留言模型
+│   │   └── like.py         # 按讚模型
+│   │
+│   ├── routes/             # 路由控制器
+│   │   ├── main.py         # 主頁路由
+│   │   ├── auth.py         # 認證路由
+│   │   ├── post.py         # 文章路由
+│   │   └── settings.py     # 設定路由
+│   │
+│   ├── services/           # 業務邏輯層
+│   │   ├── base_service.py # 基礎服務類
+│   │   ├── user_service.py # 用戶服務
+│   │   ├── post_service.py # 文章服務
+│   │   ├── comment_service.py # 留言服務
+│   │   └── like_service.py # 按讚服務
+│   │
+│   ├── static/            # 靜態文件
+│   │   ├── css/          # 樣式文件
+│   │   ├── js/           # JavaScript
+│   │   ├── images/       # 圖片資源
+│   │   ├── icon/         # 圖標文件
+│   │   └── uploads/      # 上傳文件
+│   │       └── avatars/  # 頭像
+│   │
+│   └── templates/         # 模板文件
+│       ├── auth/         # 認證相關
+│       ├── components/   # 組件
+│       ├── errors/       # 錯誤頁面
+│       ├── main/         # 主要頁面
+│       ├── pages/        # 其他頁面
+│       └── posts/        # 文章相關
+│
+├── instance/             # 實例配置
+├── migrations/           # 數據遷移
+├── .env                 # 環境變量
+└── run.py               # 啟動文件
 ```
 
 ## 安裝說明
@@ -93,10 +110,10 @@ cd Flask_web-template
 
 2. 創建虛擬環境
 ```bash
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
+python -m venv .venv
+source .venv/bin/activate  # Linux/Mac
 # or
-venv\Scripts\activate     # Windows
+.venv\Scripts\activate    # Windows
 ```
 
 3. 安裝依賴
@@ -123,38 +140,54 @@ flask db upgrade
 flask run
 ```
 
-## 使用說明
+## 開發指南
 
-1. 訪問 `http://localhost:5000` 進入首頁
-2. 點擊「註冊」創建新帳號
-3. 使用註冊的帳號登入系統
-4. 登入後可以：
-   - 發布/編輯/刪除文章
-   - 修改個人資料
-   - 上傳頭像
-   - 查看會員列表
+### 資料庫遷移
+```bash
+# 創建遷移
+flask db migrate -m "Migration message"
 
-## 安全性考慮
+# 應用遷移
+flask db upgrade
+```
 
-- 密碼使用 werkzeug.security 進行加密
-- 實作 CSRF 保護
-- 檔案上傳限制和驗證
-- 用戶認證和授權控制
+### 添加新功能
+1. 在 models/ 添加新的數據模型
+2. 在 services/ 實現業務邏輯
+3. 在 routes/ 添加路由控制
+4. 在 templates/ 添加視圖模板
 
-## 開發注意事項
+## 項目依賴
 
-1. 生產環境建議：
-   - 使用 PostgreSQL 替換 SQLite
-   - 配置適當的日誌記錄
-   - 設置郵件服務
-   - 增加錯誤監控
+主要依賴包：
+```
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.3
+Flask-Migrate==4.0.5
+python-dotenv==1.0.0
+Pillow==10.1.0
+Werkzeug==3.0.1
+```
 
-2. 待優化項目：
-   - 添加文章評論功能
-   - 實現用戶權限管理
-   - 改進文章編輯器
-   - 添加搜索功能
-   - 實現用戶互動功能
+## 待優化項目
+
+1. 功能改進
+   - 添加文章分類功能
+   - 實現更複雜的權限系統
+   - 添加文章標籤功能
+   - 改進搜索功能
+
+2. 技術改進
+   - 添加單元測試
+   - 完善錯誤處理
+   - 改進緩存機制
+   - 添加日誌系統
+
+3. 性能優化
+   - 資料庫查詢優化
+   - 靜態資源優化
+   - 圖片處理優化
 
 ## 版本信息
 
