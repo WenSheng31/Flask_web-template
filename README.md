@@ -87,8 +87,8 @@ project/
 
 1. 克隆專案
 ```bash
-git clone [專案網址]
-cd [專案目錄]
+git clone https://github.com/WenSheng31/Flask_web-template.git
+cd Flask_web-template
 ```
 
 2. 創建虛擬環境
