@@ -1,22 +1,16 @@
+# app/models/like.py
 from app import db
 from datetime import datetime
 
-
 class Like(db.Model):
-    """按讚模型"""
-    id = db.Column(db.Integer, primary_key=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    __tablename__ = 'likes'
 
-    # 外鍵關聯
+    id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # 設置複合唯一約束，確保每個用戶只能對同一篇文章按讚一次
-    __table_args__ = (db.UniqueConstraint('user_id', 'post_id'),)
-
-    # 關聯關係
-    user = db.relationship('User', backref=db.backref('likes', lazy=True))
-    post = db.relationship('Post', backref=db.backref('likes', lazy=True, cascade='all, delete-orphan'))
+    __table_args__ = (db.UniqueConstraint('user_id', 'post_id', name='_user_post_uc'),)
 
     def __repr__(self):
         return f'<Like {self.id}>'

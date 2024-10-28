@@ -1,7 +1,5 @@
 from app import db
 from datetime import datetime
-from .like import Like
-from .comment import Comment
 
 
 class Post(db.Model):
@@ -12,27 +10,20 @@ class Post(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-    # 定義與 User 模型的關係
+    # 關聯
     author = db.relationship('User', backref=db.backref('posts', lazy=True))
+    likes = db.relationship('Like', backref='post', lazy='dynamic', cascade='all, delete-orphan')
 
     @property
     def like_count(self):
         """獲取按讚數量"""
-        return Like.query.filter_by(post_id=self.id).count()
-
-    @property
-    def comment_count(self):
-        """獲取留言數量"""
-        return Comment.query.filter_by(post_id=self.id).count()
+        return self.likes.count()
 
     def is_liked_by(self, user):
         """檢查用戶是否已按讚"""
         if not user:
             return False
-        return Like.query.filter_by(
-            user_id=user.id,
-            post_id=self.id
-        ).first() is not None
+        return bool(self.likes.filter_by(user_id=user.id).first())
 
     def __repr__(self):
         return f'<Post {self.id}>'

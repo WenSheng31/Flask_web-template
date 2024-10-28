@@ -1,97 +1,88 @@
 {% extends "base.html" %}
-
 {% block content %}
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0">文章列表</h2>
         {% if current_user.is_authenticated %}
-        <a href="{{ url_for('post.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg"></i> 發布文章
-        </a>
+            <a href="{{ url_for('post.create') }}" class="btn btn-primary">發布文章</a>
         {% endif %}
     </div>
 
     {% for post in posts.items %}
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <div class="d-flex align-items-center mb-3">
-                {% if post.author.avatar_path %}
-                <img src="{{ url_for('static', filename=post.author.avatar_path) }}"
-                     class="rounded-circle me-2"
-                     style="width: 40px; height: 40px; object-fit: cover;"
-                     alt="{{ post.author.username }}的頭像">
-                {% else %}
-                <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
-                     style="width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem;">
-                    {{ post.author.username[0].upper() }}
-                </div>
-                {% endif %}
-                <div>
-                    <h6 class="mb-0">{{ post.author.username }}</h6>
-                    <small class="text-muted">
-                        {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
-                    </small>
-                </div>
-            </div>
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    {% if post.author.avatar_path %}
+                        <img src="{{ url_for('static', filename=post.author.avatar_path) }}"
+                             class="rounded-circle me-2"
+                             style="width: 40px; height: 40px; object-fit: cover;">
+                    {% else %}
+                        <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
+                             style="width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem;">
+                            {{ post.author.username[0].upper() }}
+                        </div>
+                    {% endif %}
 
-            <h5 class="card-title">
-                <a href="{{ url_for('post.show', id=post.id) }}" 
-                   class="text-decoration-none text-dark">
-                    {{ post.title }}
-                </a>
-            </h5>
-            <p class="card-text text-muted">
-                {{ post.content[:200] }}{% if post.content|length > 200 %}...{% endif %}
-            </p>
-            <div class="d-flex justify-content-between align-items-center">
-                <a href="{{ url_for('post.show', id=post.id) }}" 
-                   class="btn btn-outline-primary btn-sm">
-                    閱讀更多
-                </a>
-                {% if current_user == post.author %}
-                <div class="btn-group">
-                    <a href="{{ url_for('post.edit', id=post.id) }}" 
-                       class="btn btn-outline-secondary btn-sm">
-                        <i class="bi bi-pencil"></i> 編輯
-                    </a>
-                    <button type="button" 
-                            class="btn btn-outline-danger btn-sm"
-                            onclick="confirmDelete({{ post.id }})">
-                        <i class="bi bi-trash"></i> 刪除
-                    </button>
+                    <div>
+                        <h6 class="mb-0">{{ post.author.username }}</h6>
+                        <small class="text-muted">{{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </div>
                 </div>
-                {% endif %}
+
+                <h5 class="card-title">
+                    <a href="{{ url_for('post.show', id=post.id) }}" class="text-decoration-none text-dark">
+                        {{ post.title }}
+                    </a>
+                </h5>
+
+                <p class="card-text">
+                    {{ post.content[:200] }}{% if post.content|length > 200 %}...{% endif %}
+                </p>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{{ url_for('post.show', id=post.id) }}"
+                       class="btn btn-outline-primary btn-sm">閱讀更多</a>
+
+                    {% if current_user == post.author %}
+                        <div class="btn-group">
+                            <a href="{{ url_for('post.edit', id=post.id) }}"
+                               class="btn btn-outline-secondary btn-sm">編輯</a>
+                            <button type="button"
+                                    class="btn btn-outline-danger btn-sm"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteModal"
+                                    data-post-id="{{ post.id }}">刪除</button>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
-    </div>
     {% else %}
-    <div class="card shadow-sm">
-        <div class="card-body text-center py-5">
-            <i class="bi bi-file-text" style="font-size: 3rem;"></i>
-            <p class="mt-3 mb-0">目前還沒有任何文章</p>
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <p class="mb-0">目前還沒有任何文章</p>
+            </div>
         </div>
-    </div>
     {% endfor %}
 
-    <!-- 分頁控制 -->
     {% if posts.pages > 1 %}
-    <nav aria-label="Page navigation" class="mt-4">
-        <ul class="pagination justify-content-center">
-            {% for page in posts.iter_pages() %}
-                {% if page %}
-                    <li class="page-item {% if page == posts.page %}active{% endif %}">
-                        <a class="page-link" href="{{ url_for('post.index', page=page) }}">
-                            {{ page }}
-                        </a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">...</span>
-                    </li>
-                {% endif %}
-            {% endfor %}
-        </ul>
-    </nav>
+        <nav aria-label="頁面導航">
+            <ul class="pagination justify-content-center">
+                {% for page in posts.iter_pages() %}
+                    {% if page %}
+                        <li class="page-item {% if page == posts.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('post.index', page=page) }}">
+                                {{ page }}
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </nav>
     {% endif %}
 </div>
 
@@ -108,7 +99,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                <form id="deleteForm" method="POST" style="display: inline;">
+                <form id="deleteForm" method="post" style="display: inline;">
                     <button type="submit" class="btn btn-danger">確定刪除</button>
                 </form>
             </div>
@@ -119,11 +110,11 @@
 
 {% block scripts %}
 <script>
-function confirmDelete(postId) {
-    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+document.getElementById('deleteModal').addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget;
+    const postId = button.getAttribute('data-post-id');
     const form = document.getElementById('deleteForm');
     form.action = `/posts/${postId}/delete`;
-    modal.show();
-}
+});
 </script>
 {% endblock %}
