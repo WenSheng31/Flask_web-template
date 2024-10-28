@@ -247,59 +247,6 @@ class UserService(BaseService):
             current_app.logger.error(f"Error updating avatar: {str(e)}")
             return False, str(e)
 
-    @classmethod
-    def process_avatar(cls, file, user_id: int) -> Tuple[bool, Optional[str], Optional[str]]:
-        """
-        處理頭像上傳
-
-        Args:
-            file: 上傳的文件
-            user_id: 用戶ID
-
-        Returns:
-            Tuple[bool, Optional[str], Optional[str]]: (是否成功, 文件路徑, 錯誤訊息)
-        """
-        try:
-            if not file:
-                return False, None, "未選擇文件"
-
-            if not cls.allowed_file(file.filename):
-                return False, None, "不支持的文件格式"
-
-            # 生成安全的文件名
-            timestamp = int(datetime.utcnow().timestamp())
-            filename = secure_filename(f"avatar_{user_id}_{timestamp}.jpg")
-
-            # 確保上傳目錄存在
-            upload_dir = os.path.join(current_app.static_folder, 'uploads', 'avatars')
-            os.makedirs(upload_dir, exist_ok=True)
-
-            filepath = os.path.join(upload_dir, filename)
-
-            # 處理圖片
-            image = Image.open(file)
-            if image.mode in ('RGBA', 'P'):
-                image = image.convert('RGB')
-
-            # 裁剪為正方形
-            width, height = image.size
-            size = min(width, height)
-            left = (width - size) // 2
-            top = (height - size) // 2
-            image = image.crop((left, top, left + size, top + size))
-
-            # 調整大小
-            image = image.resize(cls.AVATAR_SIZE, Image.Resampling.LANCZOS)
-
-            # 保存圖片
-            image.save(filepath, 'JPEG', quality=cls.AVATAR_QUALITY)
-
-            return True, f"uploads/avatars/{filename}", None
-
-        except Exception as e:
-            current_app.logger.error(f"Error processing avatar: {str(e)}")
-            return False, None, str(e)
-
     @staticmethod
     def get_user_stats(user_id: int) -> Dict:
         """

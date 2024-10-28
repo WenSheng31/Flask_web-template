@@ -231,7 +231,7 @@
                         </div>
                     </div>
                     {% if not loop.last %}
-                    <hr class="my-3">
+
                     {% endif %}
                     {% endfor %}
                     {% else %}
@@ -384,9 +384,6 @@
 <script>
     // 初始化工具提示
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    })
 
     // 處理刪除文章
     document.getElementById('deleteModal').addEventListener('show.bs.modal', function (event) {
@@ -394,13 +391,6 @@
         const postId = button.getAttribute('data-post-id');
         const form = document.getElementById('deleteForm');
         form.action = `/posts/${postId}/delete`;
-    });
-
-    // 初始化輪播
-    var carousel = new bootstrap.Carousel(document.getElementById('featuredPosts'), {
-        interval: 5000,
-        wrap: true,
-        touch: true
     });
 </script>
 {% endblock %}

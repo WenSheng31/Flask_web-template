@@ -9,30 +9,30 @@
                     <!-- 作者資訊 -->
                     <div class="d-flex align-items-center mb-4">
                         {% if post.author.avatar_path %}
-                            <img src="{{ url_for('static', filename=post.author.avatar_path) }}"
-                                 class="rounded-circle me-3"
-                                 style="width: 50px; height: 50px; object-fit: cover;">
+                        <img src="{{ url_for('static', filename=post.author.avatar_path) }}"
+                             class="rounded-circle me-3"
+                             style="width: 50px; height: 50px; object-fit: cover;">
                         {% else %}
-                            <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center me-3"
-                                 style="width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem;">
-                                {{ post.author.username[0].upper() }}
-                            </div>
+                        <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center me-3"
+                             style="width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem;">
+                            {{ post.author.username[0].upper() }}
+                        </div>
                         {% endif %}
                         <div>
                             <h6 class="mb-0">{{ post.author.username }}</h6>
                             <small class="text-muted">
                                 發布於 {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
                                 {% if post.updated_at != post.created_at %}
-                                    • 更新於 {{ post.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                                • 更新於 {{ post.updated_at.strftime('%Y-%m-%d %H:%M') }}
                                 {% endif %}
                             </small>
                         </div>
                     </div>
 
                     <!-- 文章標題和內容 -->
-                    <h2 class="card-title mb-4">{{ post.title }}</h2>
-                    <div class="card-text mb-4">
-                        {{ post.content|nl2br }}
+                    <h2 class="card-title">{{ post.title }}</h2>
+                    <div class="card-text mb-3" style="white-space: pre-wrap;">
+                        <p>{{ post.content | safe }}</p>
                     </div>
 
                     <!-- 按讚按鈕 -->
@@ -43,12 +43,12 @@
                             <i class="bi bi-heart-fill"></i>
                             <span class="like-count">{{ post.like_count }}</span>
                         </button>
-                    {% else %}
+                        {% else %}
                         <button class="btn btn-outline-primary" disabled>
                             <i class="bi bi-heart-fill"></i>
                             <span class="like-count">{{ post.like_count }}</span>
                         </button>
-                    {% endif %}
+                        {% endif %}
                     </div>
 
                     <!-- 文章操作按鈕 -->
@@ -57,14 +57,15 @@
                             返回列表
                         </a>
                         {% if current_user == post.author %}
-                            <div class="btn-group">
-                                <a href="{{ url_for('post.edit', id=post.id) }}" class="btn btn-outline-primary">
-                                    編輯
-                                </a>
-                                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                                    刪除
-                                </button>
-                            </div>
+                        <div class="btn-group">
+                            <a href="{{ url_for('post.edit', id=post.id) }}" class="btn btn-outline-primary">
+                                編輯
+                            </a>
+                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
+                                    data-bs-target="#deleteModal">
+                                刪除
+                            </button>
+                        </div>
                         {% endif %}
                     </div>
                 </div>
@@ -81,129 +82,133 @@
                 <div class="card-body">
                     <!-- 留言表單 -->
                     {% if current_user.is_authenticated %}
-                        <form action="{{ url_for('post.create_comment', post_id=post.id) }}" method="post">
-                            <div class="mb-3">
+                    <form action="{{ url_for('post.create_comment', post_id=post.id) }}" method="post">
+                        <div class="mb-3">
                                 <textarea name="content" class="form-control" rows="3"
                                           placeholder="寫下你的留言..." required></textarea>
-                            </div>
-                            <div class="text-end">
-                                <button type="submit" class="btn btn-primary">發布留言</button>
-                            </div>
-                        </form>
-                    {% else %}
-                        <div class="alert alert-info">
-                            請<a href="{{ url_for('auth.login') }}" class="alert-link">登入</a>後參與留言
                         </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">發布留言</button>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-info">
+                        請<a href="{{ url_for('auth.login') }}" class="alert-link">登入</a>後參與留言
+                    </div>
                     {% endif %}
 
                     <!-- 留言列表 -->
                     <div class="comments-list mt-4">
                         {% for comment in post.comments %}
-                            {% if not comment.parent_id %}
-                                <div class="comment-item mb-4">
-                                    <div class="d-flex">
-                                        {% if comment.author.avatar_path %}
-                                            <img src="{{ url_for('static', filename=comment.author.avatar_path) }}"
-                                                 class="rounded-circle me-2"
-                                                 style="width: 40px; height: 40px; object-fit: cover;">
-                                        {% else %}
-                                            <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
-                                                 style="width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem;">
-                                                {{ comment.author.username[0].upper() }}
-                                            </div>
-                                        {% endif %}
-
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <h6 class="mb-0">{{ comment.author.username }}</h6>
-                                                    <small class="text-muted">
-                                                        {{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}
-                                                    </small>
-                                                </div>
-                                                {% if current_user == comment.author %}
-                                                    <button class="btn btn-sm btn-outline-danger delete-comment"
-                                                            data-comment-id="{{ comment.id }}">
-                                                        刪除
-                                                    </button>
-                                                {% endif %}
-                                            </div>
-                                            <div class="mt-2">
-                                                {{ comment.content|nl2br }}
-                                            </div>
-
-                                            <!-- 回覆按鈕 -->
-                                            {% if current_user.is_authenticated %}
-                                                <button class="btn btn-sm btn-link reply-btn"
-                                                        data-comment-id="{{ comment.id }}">
-                                                    回覆
-                                                </button>
-                                            {% endif %}
-
-                                            <!-- 回覆表單（預設隱藏） -->
-                                            <div class="reply-form mt-2" id="reply-form-{{ comment.id }}" style="display: none;">
-                                                <form action="{{ url_for('post.create_comment', post_id=post.id) }}" method="post">
-                                                    <input type="hidden" name="parent_id" value="{{ comment.id }}">
-                                                    <div class="mb-2">
-                                                        <textarea name="content" class="form-control form-control-sm"
-                                                                  rows="2" placeholder="寫下你的回覆..." required></textarea>
-                                                    </div>
-                                                    <div class="text-end">
-                                                        <button type="button" class="btn btn-sm btn-link cancel-reply">取消</button>
-                                                        <button type="submit" class="btn btn-sm btn-primary">回覆</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-
-                                            <!-- 顯示回覆 -->
-                                            {% if comment.replies.count() > 0 %}
-                                                <div class="replies ms-4 mt-3">
-                                                    {% for reply in comment.replies %}
-                                                        <div class="reply-item mb-3">
-                                                            <div class="d-flex">
-                                                                {% if reply.author.avatar_path %}
-                                                                    <img src="{{ url_for('static', filename=reply.author.avatar_path) }}"
-                                                                         class="rounded-circle me-2"
-                                                                         style="width: 32px; height: 32px; object-fit: cover;">
-                                                                {% else %}
-                                                                    <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
-                                                                         style="width: 32px; height: 32px; border-radius: 50%; font-size: 1rem;">
-                                                                        {{ reply.author.username[0].upper() }}
-                                                                    </div>
-                                                                {% endif %}
-
-                                                                <div class="flex-grow-1">
-                                                                    <div class="d-flex justify-content-between align-items-center">
-                                                                        <div>
-                                                                            <h6 class="mb-0">{{ reply.author.username }}</h6>
-                                                                            <small class="text-muted">
-                                                                                {{ reply.created_at.strftime('%Y-%m-%d %H:%M') }}
-                                                                            </small>
-                                                                        </div>
-                                                                        {% if current_user == reply.author %}
-                                                                            <button class="btn btn-sm btn-outline-danger delete-comment"
-                                                                                    data-comment-id="{{ reply.id }}">
-                                                                                刪除
-                                                                            </button>
-                                                                        {% endif %}
-                                                                    </div>
-                                                                    <div class="mt-2">
-                                                                        {{ reply.content|nl2br }}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    {% endfor %}
-                                                </div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
+                        {% if not comment.parent_id %}
+                        <div class="comment-item mb-4">
+                            <div class="d-flex">
+                                {% if comment.author.avatar_path %}
+                                <img src="{{ url_for('static', filename=comment.author.avatar_path) }}"
+                                     class="rounded-circle me-2"
+                                     style="width: 40px; height: 40px; object-fit: cover;">
+                                {% else %}
+                                <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
+                                     style="width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem;">
+                                    {{ comment.author.username[0].upper() }}
                                 </div>
-                            {% endif %}
-                        {% else %}
-                            <div class="text-center text-muted py-4">
-                                暫無留言
+                                {% endif %}
+
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">{{ comment.author.username }}</h6>
+                                            <small class="text-muted">
+                                                {{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                            </small>
+                                        </div>
+                                        {% if current_user == comment.author %}
+                                        <button class="btn btn-sm btn-outline-danger delete-comment"
+                                                data-comment-id="{{ comment.id }}">
+                                            刪除
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                    <div class="mt-2">
+                                        {{ comment.content|nl2br }}
+                                    </div>
+
+                                    <!-- 回覆按鈕 -->
+                                    {% if current_user.is_authenticated %}
+                                    <button class="btn btn-sm btn-link reply-btn"
+                                            data-comment-id="{{ comment.id }}">
+                                        回覆
+                                    </button>
+                                    {% endif %}
+
+                                    <!-- 回覆表單（預設隱藏） -->
+                                    <div class="reply-form mt-2" id="reply-form-{{ comment.id }}"
+                                         style="display: none;">
+                                        <form action="{{ url_for('post.create_comment', post_id=post.id) }}"
+                                              method="post">
+                                            <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                                            <div class="mb-2">
+                                                        <textarea name="content" class="form-control form-control-sm"
+                                                                  rows="2" placeholder="寫下你的回覆..."
+                                                                  required></textarea>
+                                            </div>
+                                            <div class="text-end">
+                                                <button type="button" class="btn btn-sm btn-link cancel-reply">取消
+                                                </button>
+                                                <button type="submit" class="btn btn-sm btn-primary">回覆</button>
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                    <!-- 顯示回覆 -->
+                                    {% if comment.replies.count() > 0 %}
+                                    <div class="replies ms-4 mt-3">
+                                        {% for reply in comment.replies %}
+                                        <div class="reply-item mb-3">
+                                            <div class="d-flex">
+                                                {% if reply.author.avatar_path %}
+                                                <img src="{{ url_for('static', filename=reply.author.avatar_path) }}"
+                                                     class="rounded-circle me-2"
+                                                     style="width: 32px; height: 32px; object-fit: cover;">
+                                                {% else %}
+                                                <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
+                                                     style="width: 32px; height: 32px; border-radius: 50%; font-size: 1rem;">
+                                                    {{ reply.author.username[0].upper() }}
+                                                </div>
+                                                {% endif %}
+
+                                                <div class="flex-grow-1">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <h6 class="mb-0">{{ reply.author.username }}</h6>
+                                                            <small class="text-muted">
+                                                                {{ reply.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                                            </small>
+                                                        </div>
+                                                        {% if current_user == reply.author %}
+                                                        <button class="btn btn-sm btn-outline-danger delete-comment"
+                                                                data-comment-id="{{ reply.id }}">
+                                                            刪除
+                                                        </button>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="mt-2">
+                                                        {{ reply.content|nl2br }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
                             </div>
+                        </div>
+                        {% endif %}
+                        {% else %}
+                        <div class="text-center text-muted py-4">
+                            暫無留言
+                        </div>
                         {% endfor %}
                     </div>
                 </div>
@@ -236,86 +241,86 @@
 
 {% block scripts %}
 <script>
-// 按讚功能
-document.querySelectorAll('.like-btn').forEach(button => {
-    button.addEventListener('click', async function() {
-        const postId = this.dataset.postId;
-        try {
-            const response = await fetch(`/posts/${postId}/like`, {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
+    // 按讚功能
+    document.querySelectorAll('.like-btn').forEach(button => {
+        button.addEventListener('click', async function () {
+            const postId = this.dataset.postId;
+            try {
+                const response = await fetch(`/posts/${postId}/like`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    // 更新按鈕狀態
+                    this.classList.toggle('btn-primary', data.liked);
+                    this.classList.toggle('btn-outline-primary', !data.liked);
+
+                    // 更新按讚數
+                    this.querySelector('.like-count').textContent = data.count;
+                } else {
+                    alert(data.message || '操作失敗');
                 }
-            });
-            const data = await response.json();
-
-            if (data.success) {
-                // 更新按鈕狀態
-                this.classList.toggle('btn-primary', data.liked);
-                this.classList.toggle('btn-outline-primary', !data.liked);
-
-                // 更新按讚數
-                this.querySelector('.like-count').textContent = data.count;
-            } else {
-                alert(data.message || '操作失敗');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('操作失敗');
-        }
-    });
-});
-
-// 刪除留言功能
-document.querySelectorAll('.delete-comment').forEach(button => {
-    button.addEventListener('click', async function() {
-        if (!confirm('確定要刪除這條留言嗎？')) return;
-
-        const commentId = this.dataset.commentId;
-        try {
-            const response = await fetch(`/posts/comments/${commentId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
-            const data = await response.json();
-
-            if (data.success) {
-                this.closest('.comment-item, .reply-item').remove();
-            } else {
-                alert(data.message || '刪除失敗');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('操作失敗');
-        }
-    });
-});
-
-// 回覆功能
-document.querySelectorAll('.reply-btn').forEach(button => {
-    button.addEventListener('click', function() {
-        const commentId = this.dataset.commentId;
-        const replyForm = document.getElementById(`reply-form-${commentId}`);
-
-        // 隱藏其他所有回覆表單
-        document.querySelectorAll('.reply-form').forEach(form => {
-            if (form !== replyForm) {
-                form.style.display = 'none';
+            } catch (error) {
+                console.error('Error:', error);
+                alert('操作失敗');
             }
         });
-
-        // 切換當前回覆表單的顯示狀態
-        replyForm.style.display = replyForm.style.display === 'none' ? 'block' : 'none';
     });
-});
 
-// 取消回覆
-document.querySelectorAll('.cancel-reply').forEach(button => {
-    button.addEventListener('click', function() {
-        this.closest('.reply-form').style.display = 'none';
+    // 刪除留言功能
+    document.querySelectorAll('.delete-comment').forEach(button => {
+        button.addEventListener('click', async function () {
+            if (!confirm('確定要刪除這條留言嗎？')) return;
+
+            const commentId = this.dataset.commentId;
+            try {
+                const response = await fetch(`/posts/comments/${commentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    this.closest('.comment-item, .reply-item').remove();
+                } else {
+                    alert(data.message || '刪除失敗');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('操作失敗');
+            }
+        });
     });
-});
+
+    // 回覆功能
+    document.querySelectorAll('.reply-btn').forEach(button => {
+        button.addEventListener('click', function () {
+            const commentId = this.dataset.commentId;
+            const replyForm = document.getElementById(`reply-form-${commentId}`);
+
+            // 隱藏其他所有回覆表單
+            document.querySelectorAll('.reply-form').forEach(form => {
+                if (form !== replyForm) {
+                    form.style.display = 'none';
+                }
+            });
+
+            // 切換當前回覆表單的顯示狀態
+            replyForm.style.display = replyForm.style.display === 'none' ? 'block' : 'none';
+        });
+    });
+
+    // 取消回覆
+    document.querySelectorAll('.cancel-reply').forEach(button => {
+        button.addEventListener('click', function () {
+            this.closest('.reply-form').style.display = 'none';
+        });
+    });
 </script>
 {% endblock %}
