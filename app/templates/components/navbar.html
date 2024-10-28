@@ -14,7 +14,7 @@
                 <li class="nav-item">
                     <a class="nav-link px-3 {% if request.endpoint and request.endpoint == 'main.index' %}fw-medium text-primary{% endif %}"
                        href="{{ url_for('main.index') }}">
-                       首頁
+                       <i class="bi bi-house"></i> 首頁
                     </a>
                 </li>
                 <li class="nav-item">
@@ -50,13 +50,13 @@
                         <li>
                             <a class="dropdown-item {% if request.endpoint and request.endpoint == 'auth.profile' %}fw-medium text-primary{% endif %}"
                                href="{{ url_for('auth.profile') }}">
-                                <i class="bi bi-person me-2"></i>個人資料
+                                <i class="bi bi-person me-2"></i> 個人資料
                             </a>
                         </li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
-                                <i class="bi bi-box-arrow-right me-2"></i>登出
+                                <i class="bi bi-box-arrow-right me-2"></i> 登出
                             </a>
                         </li>
                     </ul>

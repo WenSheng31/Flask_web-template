@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from app.services import UserService
 from urllib.parse import urlparse
@@ -81,33 +81,42 @@ def profile():
         action = request.form.get('action')
 
         if action == 'update_profile':
+            # 處理基本資料更新
+            if 'avatar' in request.files:
+                file = request.files['avatar']
+                if file.filename:
+                    success, error = UserService.update_avatar(
+                        user_id=current_user.id,
+                        file=file,
+                        app=current_app
+                    )
+                    if not success:
+                        flash(f'頭像更新失敗: {error}', 'danger')
+                        return redirect(url_for('auth.profile'))
+
+            # 更新其他資料
             success, error = UserService.update_profile(
                 user_id=current_user.id,
                 username=request.form.get('username'),
                 email=request.form.get('email')
             )
+
             if success:
                 flash('個人資料已更新', 'success')
             else:
                 flash(f'更新失敗: {error}', 'danger')
 
         elif action == 'update_password':
-            current_password = request.form.get('current_password')
-            new_password = request.form.get('new_password')
-            confirm_password = request.form.get('confirm_password')
+            success, error = UserService.update_password(
+                user_id=current_user.id,
+                current_password=request.form.get('current_password'),
+                new_password=request.form.get('new_password')
+            )
 
-            if new_password != confirm_password:
-                flash('新密碼與確認密碼不符', 'danger')
+            if success:
+                flash('密碼已更新', 'success')
             else:
-                success, error = UserService.update_password(
-                    user_id=current_user.id,
-                    current_password=current_password,
-                    new_password=new_password
-                )
-                if success:
-                    flash('密碼已更新', 'success')
-                else:
-                    flash(f'更新失敗: {error}', 'danger')
+                flash(f'更新失敗: {error}', 'danger')
 
         return redirect(url_for('auth.profile'))
 

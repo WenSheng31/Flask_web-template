@@ -1,66 +1,233 @@
+/* 基本變量定義 */
 :root {
-    --bs-primary: #0d6efd;
+    --bs-primary: #22BABB;
+    --bs-primary-hover: #1da5a6;
     --bs-body-bg: #f8f9fa;
+    --transition-speed: 0.2s;
+    --box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+    --card-border-radius: 0.5rem;
 }
 
+/* 基本樣式 */
 body {
     font-family: 'Noto Sans TC', sans-serif;
     background-color: var(--bs-body-bg);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    color: #333;
 }
 
 main {
     flex: 1 0 auto;
+    padding: 2rem 0;
 }
 
-/* Navbar customization */
+/* 導航欄樣式 */
+.navbar {
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,.05);
+}
+
 .navbar-brand {
     font-weight: 700;
+    color: var(--bs-primary) !important;
+    transition: color var(--transition-speed) ease;
+}
+
+.navbar-brand:hover {
+    color: var(--bs-primary-hover) !important;
 }
 
 .nav-link {
     font-weight: 500;
+    padding: 0.5rem 1rem !important;
+    transition: all var(--transition-speed) ease;
 }
 
-/* Card customization */
+.nav-link:hover {
+    color: var(--bs-primary) !important;
+    background-color: rgba(34, 186, 187, 0.1);
+    border-radius: 0.25rem;
+}
+
+/* 卡片樣式 */
 .card {
-    transition: transform 0.2s ease;
+    border: none;
+    border-radius: var(--card-border-radius);
+    box-shadow: 0 2px 4px rgba(0,0,0,.05);
+    transition: transform var(--transition-speed) ease, 
+                box-shadow var(--transition-speed) ease;
 }
 
 .card:hover {
+    box-shadow: var(--box-shadow);
 }
 
-/* Button customization */
+.card-header {
+    background-color: white;
+    border-bottom: 1px solid rgba(0,0,0,.1);
+    padding: 1rem 1.25rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* 按鈕樣式 */
 .btn {
     font-weight: 500;
     padding: 0.5rem 1.5rem;
+    border-radius: 0.375rem;
+    transition: all var(--transition-speed) ease;
 }
 
-/* Custom utility classes */
+.btn-primary {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--bs-primary-hover);
+    border-color: var(--bs-primary-hover);
+    transform: translateY(-1px);
+}
+
+.btn-outline-primary {
+    color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: white;
+}
+
+/* 自定義工具類 */
 .shadow-hover {
-    transition: box-shadow 0.2s ease;
+    transition: box-shadow var(--transition-speed) ease,
+                transform var(--transition-speed) ease;
 }
 
 .shadow-hover:hover {
-    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    box-shadow: var(--box-shadow);
+    transform: translateY(-2px);
 }
 
-/* Profile */
+/* 個人資料頁面樣式 */
+.avatar-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
 .avatar-upload-btn {
     width: 32px;
     height: 32px;
     padding: 0;
     cursor: pointer;
-    margin-right: -5px;
-    margin-bottom: -5px;
-    transition: all 0.2s ease;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-speed) ease;
 }
 
 .avatar-upload-btn:hover {
-    background-color: #e9ecef;
+    background-color: var(--bs-primary);
+    color: white;
     transform: scale(1.1);
+}
+
+/* 文章樣式 */
+.post-card {
+    margin-bottom: 1.5rem;
+}
+
+.post-title {
+    color: #333;
+    text-decoration: none;
+    transition: color var(--transition-speed) ease;
+}
+
+.post-title:hover {
+    color: var(--bs-primary);
+}
+
+.post-meta {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+/* 留言樣式 */
+.comment-item {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0,0,0,.1);
+}
+
+.comment-item:last-child {
+    border-bottom: none;
+}
+
+.comment-author {
+    font-weight: 500;
+    color: #333;
+}
+
+.comment-meta {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+/* 分頁樣式 */
+.pagination {
+    margin-top: 2rem;
+}
+
+.page-link {
+    padding: 0.5rem 1rem;
+    color: var(--bs-primary);
+    transition: all var(--transition-speed) ease;
+}
+
+.page-link:hover {
+    background-color: rgba(34, 186, 187, 0.1);
+    color: var(--bs-primary-hover);
+}
+
+.page-item.active .page-link {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+/* 表單樣式 */
+.form-control {
+    border-radius: 0.375rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #dee2e6;
+    transition: border-color var(--transition-speed) ease,
+                box-shadow var(--transition-speed) ease;
+}
+
+.form-control:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.25rem rgba(34, 186, 187, 0.25);
+}
+
+/* Alert 樣式 */
+.alert {
+    border: none;
+    border-radius: var(--card-border-radius);
+    padding: 1rem 1.25rem;
 }
 
 /* 響應式調整 */
@@ -68,4 +235,40 @@ main {
     .display-4 {
         font-size: 2.5rem;
     }
+    
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .btn {
+        padding: 0.375rem 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    main {
+        padding: 1rem 0;
+    }
+    
+    .display-4 {
+        font-size: 2rem;
+    }
+}
+
+/* 輔助工具類 */
+.text-primary {
+    color: var(--bs-primary) !important;
+}
+
+.bg-primary {
+    background-color: var(--bs-primary) !important;
+}
+
+.border-primary {
+    border-color: var(--bs-primary) !important;
 }
