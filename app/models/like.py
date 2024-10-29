@@ -8,7 +8,7 @@ class Like(db.Model):
 
     # 基本欄位
     id = db.Column(db.Integer, primary_key=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, comment='按讚時間')
+    created_at = db.Column(db.DateTime, default=datetime.now, comment='按讚時間')
 
     # 外鍵關聯
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, comment='用戶ID')

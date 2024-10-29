@@ -11,8 +11,8 @@ class Comment(db.Model):
     content = db.Column(db.Text, nullable=False, comment='留言內容')
 
     # 時間相關欄位
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, comment='創建時間')
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新時間')
+    created_at = db.Column(db.DateTime, default=datetime.now, comment='創建時間')
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now, comment='更新時間')
 
     # 外鍵關聯
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, comment='留言者ID')

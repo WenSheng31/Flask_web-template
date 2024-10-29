@@ -1,4 +1,4 @@
-from typing import Tuple, List, Dict, Optional
+from typing import Tuple, List
 from datetime import datetime, timedelta
 from flask import current_app
 from sqlalchemy import func
@@ -103,7 +103,6 @@ class LikeService(BaseService):
             current_app.logger.error(f"Error getting liked posts: {str(e)}")
             return [], 0
 
-
     @staticmethod
     def get_trending_posts(days: int = 7, limit: int = 10) -> List[Post]:
         """
@@ -117,7 +116,7 @@ class LikeService(BaseService):
             List[Post]: 趨勢文章列表
         """
         try:
-            since = datetime.utcnow() - timedelta(days=days)
+            since = datetime.now() - timedelta(days=days)
             return Post.query.join(
                 Like
             ).filter(

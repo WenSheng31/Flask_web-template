@@ -1,8 +1,7 @@
-# app/services/stats_service.py
 from datetime import datetime, timedelta
 from typing import Dict
 from flask import current_app
-from sqlalchemy import func
+from sqlalchemy import func, distinct
 from app import db
 from app.models import User, Post, Comment, Like
 from .base_service import BaseService
@@ -20,7 +19,7 @@ class StatsService(BaseService):
         """
         try:
             # 計算本月新增用戶
-            first_day_of_month = datetime.utcnow().replace(
+            first_day_of_month = datetime.now().replace(
                 day=1, hour=0, minute=0, second=0, microsecond=0
             )
 
@@ -55,7 +54,7 @@ class StatsService(BaseService):
             last_update = max(latest_updates).strftime('%Y-%m-%d %H:%M') if latest_updates else '無資料'
 
             # 活躍用戶數（30天內有活動的用戶）
-            thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+            thirty_days_ago = datetime.now() - timedelta(days=30)
             active_users = User.query.filter(
                 User.last_login >= thirty_days_ago
             ).count()
@@ -88,7 +87,7 @@ class StatsService(BaseService):
             新增用戶數
         """
         try:
-            cutoff_date = datetime.utcnow() - timedelta(days=days)
+            cutoff_date = datetime.now() - timedelta(days=days)
             return User.query.filter(User.created_at >= cutoff_date).count()
         except Exception as e:
             current_app.logger.error(f"Error getting new users count: {str(e)}")
@@ -151,7 +150,7 @@ class StatsService(BaseService):
             趨勢統計資料
         """
         try:
-            cutoff_date = datetime.utcnow() - timedelta(days=days)
+            cutoff_date = datetime.now() - timedelta(days=days)
 
             # 最熱門文章（按讚數+評論數）
             trending_posts = db.session.query(

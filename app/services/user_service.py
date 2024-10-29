@@ -1,6 +1,6 @@
 import os
-from typing import Tuple, Optional, Dict, List
-from datetime import datetime, timedelta
+from typing import Tuple, Optional
+from datetime import datetime
 from werkzeug.utils import secure_filename
 from PIL import Image
 from flask import current_app
@@ -145,7 +145,7 @@ class UserService(BaseService):
             if not user:
                 return False, "用戶不存在"
 
-            user.last_login = datetime.utcnow()
+            user.last_login = datetime.now()
             return UserService.commit()
 
         except Exception as e:
@@ -172,7 +172,7 @@ class UserService(BaseService):
                 return False, None, "不支持的文件格式"
 
             # 生成安全的文件名
-            timestamp = int(datetime.utcnow().timestamp())
+            timestamp = int(datetime.now().timestamp())
             filename = secure_filename(f"avatar_{user_id}_{timestamp}.jpg")
 
             # 確保上傳目錄存在
@@ -228,7 +228,7 @@ class UserService(BaseService):
                 return False, "用戶不存在"
 
             # 生成文件名
-            timestamp = int(datetime.utcnow().timestamp())
+            timestamp = int(datetime.now().timestamp())
             filename = secure_filename(f"avatar_{user_id}_{timestamp}.jpg")
 
             # 確保上傳目錄存在

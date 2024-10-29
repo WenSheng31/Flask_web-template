@@ -6,8 +6,8 @@ from app.models.user import User
 from app import db
 from app.utils.validators import PasswordValidator
 
-auth_bp = Blueprint('auth', __name__)
 
+auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -50,7 +50,6 @@ def login():
         return redirect(next_page)
 
     return render_template('auth/login.html', title='登入')
-
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -96,7 +95,6 @@ def register():
 
     return render_template('auth/register.html', title='註冊')
 
-
 @auth_bp.route('/check-password-strength', methods=['POST'])
 def check_password_strength():
     """檢查密碼強度的API"""
@@ -108,7 +106,6 @@ def check_password_strength():
         'message': message
     })
 
-
 @auth_bp.route('/logout')
 @login_required
 def logout():
@@ -116,7 +113,6 @@ def logout():
     logout_user()
     flash('已登出', 'info')
     return redirect(url_for('main.index'))
-
 
 @auth_bp.route('/profile', methods=['GET', 'POST'])
 @login_required

@@ -22,8 +22,8 @@ class User(UserMixin, db.Model):
     avatar_path = db.Column(db.String(200), nullable=True, comment='頭像路徑')
 
     # 時間相關欄位
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, comment='創建時間')
-    last_login = db.Column(db.DateTime, default=datetime.utcnow, comment='最後登入時間')
+    created_at = db.Column(db.DateTime, default=datetime.now, comment='創建時間')
+    last_login = db.Column(db.DateTime, default=datetime.now, comment='最後登入時間')
 
     # 狀態欄位
     is_active = db.Column(db.Boolean, default=True, comment='是否啟用')

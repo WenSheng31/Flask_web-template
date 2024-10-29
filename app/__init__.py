@@ -1,13 +1,9 @@
-# 導入標準庫
 import os
-
-# 導入第三方套件
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-
-# 導入專案配置
 from .config import Config
+
 
 # 初始化資料庫
 db = SQLAlchemy()

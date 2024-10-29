@@ -3,6 +3,7 @@ from flask import Blueprint, render_template, flash, redirect, url_for, request,
 from flask_login import login_required, current_user
 from app import db
 from app.models import User
+from app.services import UserService
 
 
 # 系統配置常量
@@ -13,9 +14,7 @@ class SystemConfig:
     ACTIVE_DAYS_THRESHOLD = 30
     DEFAULT_PAGE_SIZE = 20
 
-
 settings_bp = Blueprint('settings', __name__, url_prefix='/settings')
-
 
 def get_system_statistics() -> dict:
     """
@@ -26,7 +25,7 @@ def get_system_statistics() -> dict:
     """
     try:
         # 計算時間閾值
-        active_threshold = datetime.utcnow() - timedelta(days=SystemConfig.ACTIVE_DAYS_THRESHOLD)
+        active_threshold = datetime.now() - timedelta(days=SystemConfig.ACTIVE_DAYS_THRESHOLD)
 
         # 獲取用戶統計
         total_users = User.query.count()
@@ -46,7 +45,6 @@ def get_system_statistics() -> dict:
             'system_version': SystemConfig.VERSION,
             'last_update': SystemConfig.LAST_UPDATE,
         }
-
 
 @settings_bp.route('/', methods=['GET', 'POST'])
 @login_required
@@ -76,7 +74,6 @@ def index():
     return render_template('pages/settings.html',
                            title='設定',
                            stats=get_system_statistics())
-
 
 @settings_bp.errorhandler(Exception)
 def handle_error(error):

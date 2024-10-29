@@ -1,8 +1,7 @@
 from typing import Tuple, Optional, Any, List
-from datetime import datetime, timedelta
-from sqlalchemy import or_, func
+from datetime import datetime
+from sqlalchemy import or_
 from flask import current_app
-from app import db
 from app.models import Post
 from .base_service import BaseService
 
@@ -117,7 +116,7 @@ class PostService(BaseService):
             # 更新文章
             post.title = title
             post.content = content
-            post.updated_at = datetime.utcnow()
+            post.updated_at = datetime.now()
 
             return PostService.commit()
 

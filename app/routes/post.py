@@ -5,11 +5,11 @@ from flask import (
 from flask_login import login_required, current_user
 from app.services import PostService, CommentService, LikeService
 
+
 post_bp = Blueprint('post', __name__, url_prefix='/posts')
 
 # 配置常量
 POSTS_PER_PAGE = 10
-
 
 @post_bp.route('/')
 def index():
@@ -37,7 +37,6 @@ def index():
                            title='文章列表',
                            posts=pagination,
                            search_query=search_query)
-
 
 @post_bp.route('/create', methods=['GET', 'POST'])
 @login_required
@@ -67,7 +66,6 @@ def create():
 
     return render_template('posts/create.html', title='發布文章')
 
-
 @post_bp.route('/<int:id>')
 def show(id):
     """
@@ -84,7 +82,6 @@ def show(id):
     return render_template('posts/show.html',
                            title=post.title,
                            post=post)
-
 
 @post_bp.route('/<int:id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -124,7 +121,6 @@ def edit(id):
                            title='編輯文章',
                            post=post)
 
-
 @post_bp.route('/<int:id>/delete', methods=['POST'])
 @login_required
 def delete(id):
@@ -146,7 +142,6 @@ def delete(id):
 
     flash('文章已刪除', 'success')
     return redirect(url_for('post.index'))
-
 
 @post_bp.route('/<int:post_id>/like', methods=['POST'])
 @login_required
@@ -177,7 +172,6 @@ def toggle_like(post_id):
         'message': '操作失敗'
     }), 500
 
-
 @post_bp.route('/<int:post_id>/comments', methods=['POST'])
 @login_required
 def create_comment(post_id):
@@ -202,7 +196,6 @@ def create_comment(post_id):
           'success' if success else 'danger')
 
     return redirect(url_for('post.show', id=post_id))
-
 
 @post_bp.route('/comments/<int:comment_id>', methods=['DELETE'])
 @login_required

@@ -1,4 +1,3 @@
-# app/utils/validators.py
 import re
 from typing import Tuple
 

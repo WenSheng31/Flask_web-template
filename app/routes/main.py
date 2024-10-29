@@ -2,13 +2,11 @@ from datetime import datetime, timedelta
 from flask import Blueprint, render_template, request
 from flask_login import current_user
 from sqlalchemy.orm import joinedload
-from app import db
 from app.models import User, Post
-from app.services import UserService, PostService, StatsService
+from app.services import StatsService
 
 
 main_bp = Blueprint('main', __name__, url_prefix='/')
-
 
 def get_active_users(limit: int = 12) -> list:
     """
@@ -20,13 +18,12 @@ def get_active_users(limit: int = 12) -> list:
     Returns:
         活躍用戶列表
     """
-    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    thirty_days_ago = datetime.now() - timedelta(days=30)
     return User.query.filter(
         User.last_login >= thirty_days_ago
     ).order_by(
         User.last_login.desc()
     ).limit(limit).all()
-
 
 def get_site_statistics() -> dict:
     """
@@ -49,7 +46,6 @@ def get_site_statistics() -> dict:
         last_update = latest_post.created_at
 
     return last_update.strftime('%Y-%m-%d %H:%M') if last_update else '無資料'
-
 
 @main_bp.route('/')
 def index():
@@ -79,7 +75,6 @@ def index():
 
     return render_template('main/index.html', **template_data)
 
-
 @main_bp.route('/members')
 def members():
     """會員列表視圖"""
@@ -98,7 +93,6 @@ def members():
                            title='會員列表',
                            users=pagination.items,
                            pagination=pagination)
-
 
 @main_bp.route('/about')
 def about():

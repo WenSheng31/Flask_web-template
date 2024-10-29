@@ -1,7 +1,6 @@
 from typing import Tuple, Optional, List, Dict
 from datetime import datetime
 from flask import current_app
-from app import db
 from app.models import Comment
 from .base_service import BaseService
 
@@ -200,7 +199,7 @@ class CommentService(BaseService):
                 return False, "留言不存在"
 
             comment.content = content
-            comment.updated_at = datetime.utcnow()
+            comment.updated_at = datetime.now()
 
             return CommentService.commit()
 
