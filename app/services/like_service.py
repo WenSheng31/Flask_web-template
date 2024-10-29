@@ -103,36 +103,6 @@ class LikeService(BaseService):
             current_app.logger.error(f"Error getting liked posts: {str(e)}")
             return [], 0
 
-    @staticmethod
-    def get_post_likes_statistics(post_id: int) -> Dict:
-        """
-        獲取文章按讚統計資訊
-
-        Args:
-            post_id: 文章ID
-
-        Returns:
-            Dict: 統計資訊字典
-        """
-        try:
-            total_likes = Like.query.filter_by(post_id=post_id).count()
-            recent_likes = Like.query.filter(
-                Like.post_id == post_id,
-                Like.created_at >= datetime.utcnow() - timedelta(days=7)
-            ).count()
-
-            return {
-                'total_likes': total_likes,
-                'recent_likes': recent_likes,
-                'trend': recent_likes / total_likes if total_likes > 0 else 0
-            }
-        except Exception as e:
-            current_app.logger.error(f"Error getting like statistics: {str(e)}")
-            return {
-                'total_likes': 0,
-                'recent_likes': 0,
-                'trend': 0
-            }
 
     @staticmethod
     def get_trending_posts(days: int = 7, limit: int = 10) -> List[Post]:

@@ -205,95 +205,90 @@ class UserService(BaseService):
             current_app.logger.error(f"Error processing avatar: {str(e)}")
             return False, None, str(e)
 
-    @classmethod
-    def allowed_file(cls, filename: str) -> bool:
-        """檢查文件是否為允許的格式"""
-        return '.' in filename and \
-            filename.rsplit('.', 1)[1].lower() in cls.ALLOWED_EXTENSIONS
-
     @staticmethod
     def update_avatar(user_id: int, file) -> Tuple[bool, Optional[str]]:
         """
         更新用戶頭像
-
         Args:
             user_id: 用戶ID
             file: 上傳的文件
-
         Returns:
-            Tuple[bool, Optional[str]]: (是否成功, 錯誤訊息)
+            Tuple[bool, str]: (是否成功, 錯誤信息)
         """
         try:
-            user = UserService.get_user_by_id(user_id)
+            if not file or not file.filename:
+                return False, "未選擇文件"
+
+            # 檢查文件類型
+            if not UserService.allowed_file(file.filename):
+                return False, "不支持的文件格式"
+
+            user = User.query.get(user_id)
             if not user:
                 return False, "用戶不存在"
 
-            # 處理新頭像
-            success, file_path, error = UserService.process_avatar(file, user_id)
-            if not success:
-                return False, error
+            # 生成文件名
+            timestamp = int(datetime.utcnow().timestamp())
+            filename = secure_filename(f"avatar_{user_id}_{timestamp}.jpg")
+
+            # 確保上傳目錄存在
+            upload_folder = os.path.join(current_app.static_folder, 'uploads', 'avatars')
+            os.makedirs(upload_folder, exist_ok=True)
+
+            # 完整文件路徑
+            filepath = os.path.join(upload_folder, filename)
+
+            # 處理並保存圖片
+            try:
+                # 打開圖片
+                image = Image.open(file)
+
+                # 轉換格式
+                if image.mode in ('RGBA', 'P'):
+                    image = image.convert('RGB')
+
+                # 裁剪為正方形
+                min_side = min(image.size)
+                left = (image.width - min_side) // 2
+                top = (image.height - min_side) // 2
+                image = image.crop((left, top, left + min_side, top + min_side))
+
+                # 調整大小
+                image = image.resize((300, 300), Image.Resampling.LANCZOS)
+
+                # 保存圖片
+                image.save(filepath, 'JPEG', quality=85)
+            except Exception as e:
+                return False, f"圖片處理失敗: {str(e)}"
 
             # 刪除舊頭像
             if user.avatar_path:
                 old_avatar = os.path.join(current_app.static_folder, user.avatar_path)
                 if os.path.exists(old_avatar):
-                    os.remove(old_avatar)
+                    try:
+                        os.remove(old_avatar)
+                    except Exception:
+                        current_app.logger.warning(f"Failed to delete old avatar: {old_avatar}")
 
-            # 更新頭像路徑
-            user.avatar_path = file_path
-            return UserService.commit()
+            # 更新資料庫
+            user.avatar_path = f"uploads/avatars/{filename}"
+            success, error = UserService.commit()
+
+            if not success:
+                # 如果資料庫更新失敗，刪除新上傳的文件
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+                return False, error
+
+            return True, None
 
         except Exception as e:
             current_app.logger.error(f"Error updating avatar: {str(e)}")
             return False, str(e)
 
     @staticmethod
-    def get_user_stats(user_id: int) -> Dict:
-        """
-        獲取指定用戶的統計資訊
-
-        Args:
-            user_id: 用戶ID
-
-        Returns:
-            Dict: 用戶統計資訊
-        """
-        try:
-            user = UserService.get_user_by_id(user_id)
-            if not user:
-                return {'posts_count': 0, 'received_likes': 0}
-
-            return {
-                'posts_count': user.posts_count,
-                'received_likes': user.received_likes_count
-            }
-        except Exception as e:
-            current_app.logger.error(f"Error getting user stats: {str(e)}")
-            return {'posts_count': 0, 'received_likes': 0}
-
-    @staticmethod
-    def get_user_statistics() -> Dict:
-        """
-        獲取用戶統計資料
-
-        Returns:
-            Dict: 統計數據字典
-        """
-        try:
-            # 計算本月新增用戶
-            first_day_of_month = datetime.utcnow().replace(
-                day=1, hour=0, minute=0, second=0, microsecond=0
-            )
-
-            return {
-                'total': User.query.count(),
-                'new_this_month': User.query.filter(
-                    User.created_at >= first_day_of_month
-                ).count(),
-                'active': User.query.filter(
-                    User.last_login >= datetime.utcnow() - timedelta(days=30)
-                ).count()
-            }
-        except Exception as e:
-            current_app.logger.error(f"Error getting user statistics: {str(e)}")
-            return {'total': 0, 'new_this_month': 0, 'active': 0}
+    def allowed_file(filename: str) -> bool:
+        """檢查文件是否為允許的格式"""
+        ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+        return '.' in filename and \
+            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

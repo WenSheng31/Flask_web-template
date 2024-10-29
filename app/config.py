@@ -17,3 +17,9 @@ class Config:
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') is not None
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+
+    # 用戶大頭貼
+    POSTS_PER_PAGE = 10
+    DEFAULT_PAGE_SIZE = 10
+    UPLOAD_FOLDER = 'static/uploads'
+    MAX_CONTENT_LENGTH = 1 * 1024 * 1024  # 1MB

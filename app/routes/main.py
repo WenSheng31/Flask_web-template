@@ -4,7 +4,8 @@ from flask_login import current_user
 from sqlalchemy.orm import joinedload
 from app import db
 from app.models import User, Post
-from app.services import UserService
+from app.services import UserService, PostService, StatsService
+
 
 main_bp = Blueprint('main', __name__, url_prefix='/')
 
@@ -53,32 +54,28 @@ def get_site_statistics() -> dict:
 @main_bp.route('/')
 def index():
     """首頁視圖"""
-    # 獲取用戶統計
-    user_stats = UserService.get_user_statistics()
+    # 使用 StatsService 獲取統計資料
+    site_stats = StatsService.get_site_statistics()
 
     # 獲取最新文章
     latest_posts = Post.query.options(
         joinedload(Post.author)
     ).order_by(Post.created_at.desc()).limit(10).all()
 
-    # 準備模板數據
+    # 模板數據
     template_data = {
         'title': '首頁',
         'latest_posts': latest_posts,
-        'total_users': user_stats['total'],
-        'total_posts': Post.query.count(),
-        'new_users_this_month': user_stats['new_this_month'],
-        'last_update': get_site_statistics(),
+        'total_users': site_stats['total_users'],
+        'total_posts': site_stats['total_posts'],
+        'new_users_this_month': site_stats['new_users_this_month'],
+        'last_update': site_stats['last_update'],
         'active_users': get_active_users()
     }
 
     # 如果用戶已登入，添加用戶統計資訊
     if current_user.is_authenticated:
-        user_activity_stats = UserService.get_user_stats(current_user.id)
-        template_data['user_stats'] = {
-            'posts_count': user_activity_stats['posts_count'],
-            'received_likes': user_activity_stats['received_likes']
-        }
+        template_data['user_stats'] = StatsService.get_user_activity_stats(current_user.id)
 
     return render_template('main/index.html', **template_data)
 

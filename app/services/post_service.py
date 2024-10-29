@@ -224,32 +224,3 @@ class PostService(BaseService):
         except Exception as e:
             current_app.logger.error(f"Error getting latest posts: {str(e)}")
             return []
-
-    @staticmethod
-    def get_trending_posts(days: int = 7, limit: int = 10) -> List[Post]:
-        """
-        獲取趨勢文章（根據最近按讚數）
-
-        Args:
-            days: 統計天數
-            limit: 返回數量
-
-        Returns:
-            List[Post]: 趨勢文章列表
-        """
-        try:
-            from app.models import Like  # 僅在需要時導入 Like
-
-            since = datetime.utcnow() - timedelta(days=days)
-            return Post.query.join(
-                Like
-            ).filter(
-                Post.created_at >= since
-            ).group_by(
-                Post.id
-            ).order_by(
-                func.count(Like.id).desc()
-            ).limit(limit).all()
-        except Exception as e:
-            current_app.logger.error(f"Error getting trending posts: {str(e)}")
-            return []

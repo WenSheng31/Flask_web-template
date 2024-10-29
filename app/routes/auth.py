@@ -1,7 +1,10 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from app.services import UserService
 from urllib.parse import urlparse
+from app.models.user import User
+from app import db
+from app.utils.validators import PasswordValidator
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -51,43 +54,59 @@ def login():
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
-    """
-    用戶註冊處理
-    GET: 顯示註冊頁面
-    POST: 處理註冊請求
-    """
+    """處理用戶註冊"""
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
 
     if request.method == 'POST':
-        # 獲取註冊資料
-        user_data = {
-            'email': request.form.get('email'),
-            'username': request.form.get('username'),
-            'password': request.form.get('password'),
-            'confirm_password': request.form.get('confirm_password')
-        }
+        email = request.form.get('email')
+        username = request.form.get('username')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
 
-        # 驗證密碼
-        if user_data['password'] != user_data['confirm_password']:
+        # 驗證密碼強度
+        is_valid, message = PasswordValidator.validate_password(password)
+        if not is_valid:
+            flash(message, 'danger')
+            return redirect(url_for('auth.register'))
+
+        # 驗證密碼確認
+        if password != confirm_password:
             flash('密碼不一致', 'danger')
             return redirect(url_for('auth.register'))
 
-        # 創建用戶
-        user, error = UserService.create_user(
-            username=user_data['username'],
-            email=user_data['email'],
-            password=user_data['password']
-        )
-
-        if error:
-            flash(error, 'danger')
+        # 檢查電子郵件是否已存在
+        if User.query.filter_by(email=email).first():
+            flash('此電子郵件已被註冊', 'danger')
             return redirect(url_for('auth.register'))
+
+        # 檢查用戶名是否已存在
+        if User.query.filter_by(username=username).first():
+            flash('此用戶名已被使用', 'danger')
+            return redirect(url_for('auth.register'))
+
+        # 創建新用戶
+        user = User(email=email, username=username)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
 
         flash('註冊成功！請登入。', 'success')
         return redirect(url_for('auth.login'))
 
     return render_template('auth/register.html', title='註冊')
+
+
+@auth_bp.route('/check-password-strength', methods=['POST'])
+def check_password_strength():
+    """檢查密碼強度的API"""
+    password = request.json.get('password', '')
+    is_valid, message = PasswordValidator.validate_password(password)
+
+    return jsonify({
+        'valid': is_valid,
+        'message': message
+    })
 
 
 @auth_bp.route('/logout')
@@ -102,59 +121,46 @@ def logout():
 @auth_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
-    """
-    用戶個人資料管理
-    GET: 顯示個人資料頁面
-    POST: 處理個人資料更新
-    """
+    """處理用戶個人資料更新"""
     if request.method == 'POST':
         action = request.form.get('action')
 
-        if action == 'update_profile':
-            # 處理頭像更新
+        if action == 'update_avatar':
             if 'avatar' in request.files:
                 file = request.files['avatar']
                 if file.filename:
-                    success, error = UserService.update_avatar(
-                        user_id=current_user.id,
-                        file=file
-                    )  # 移除 app 參數
+                    success, error = UserService.update_avatar(current_user.id, file)
                     if not success:
                         flash(f'頭像更新失敗: {error}', 'danger')
-                        return redirect(url_for('auth.profile'))
+                    else:
+                        flash('頭像已更新', 'success')
+            return redirect(url_for('auth.profile'))
 
-            # 處理基本資料更新
-            profile_data = {
-                'username': request.form.get('username'),
-                'email': request.form.get('email')
-            }
-
+        elif action == 'update_profile':
             success, error = UserService.update_profile(
                 user_id=current_user.id,
-                **profile_data
+                username=request.form.get('username'),
+                email=request.form.get('email')
             )
-
             flash('個人資料已更新' if success else f'更新失敗: {error}',
                   'success' if success else 'danger')
 
-
         elif action == 'update_password':
-            # 處理密碼更新
-            password_data = {
-                'current_password': request.form.get('current_password'),
-                'new_password': request.form.get('new_password')
-            }
-            # 驗證輸入
-            if not all(password_data.values()):
-                flash('請填寫所有密碼欄位', 'danger')
-                return redirect(url_for('auth.profile'))
-            success, error = UserService.update_password(
-                user_id=current_user.id,
-                current_password=password_data['current_password'],
-                new_password=password_data['new_password']
-            )
-            flash('密碼已更新' if success else f'更新失敗: {error}',
-                  'success' if success else 'danger')
+            current_password = request.form.get('current_password')
+            new_password = request.form.get('new_password')
+            confirm_password = request.form.get('confirm_password')
+
+            if new_password != confirm_password:
+                flash('新密碼與確認密碼不符', 'danger')
+            else:
+                success, error = UserService.update_password(
+                    user_id=current_user.id,
+                    current_password=current_password,
+                    new_password=new_password
+                )
+                flash('密碼已更新' if success else f'更新失敗: {error}',
+                      'success' if success else 'danger')
+
         return redirect(url_for('auth.profile'))
 
     return render_template('auth/profile.html', title='個人資料')

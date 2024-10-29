@@ -10,10 +10,10 @@
                     <h5 class="card-title mb-0">個人資料</h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ url_for('auth.profile') }}" enctype="multipart/form-data">
-                        <input type="hidden" name="action" value="update_profile">
-
-                        <div class="row mb-4">
+                    <!-- 頭像上傳表單 -->
+                    <form id="avatarForm" method="POST" action="{{ url_for('auth.profile') }}" enctype="multipart/form-data" class="mb-4">
+                        <input type="hidden" name="action" value="update_avatar">
+                        <div class="row">
                             <div class="col-auto">
                                 <div class="position-relative">
                                     {% if current_user.avatar_path %}
@@ -36,18 +36,21 @@
                                         </label>
                                         <input type="file" id="avatar" name="avatar"
                                                class="d-none" accept="image/*"
-                                               onchange="previewImage(this);">
+                                               onchange="handleAvatarChange(this);">
                                     </div>
                                 </div>
                             </div>
                             <div class="col">
                                 <h5 class="mb-1">{{ current_user.username }}</h5>
                                 <p class="text-muted mb-0">{{ current_user.email }}</p>
-                                <small class="text-muted">加入時間：{{
-                                        current_user.created_at.strftime('%Y-%m-%d')
-                                    }}</small>
+                                <small class="text-muted">加入時間：{{ current_user.created_at.strftime('%Y-%m-%d') }}</small>
                             </div>
                         </div>
+                    </form>
+
+                    <!-- 個人資料表單 -->
+                    <form method="POST" action="{{ url_for('auth.profile') }}">
+                        <input type="hidden" name="action" value="update_profile">
 
                         <div class="mb-3">
                             <label class="form-label">用戶名</label>
@@ -76,7 +79,7 @@
                     <h5 class="card-title mb-0">修改密碼</h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ url_for('auth.profile') }}">
+                    <form method="POST" action="{{ url_for('auth.profile') }}" onsubmit="return validatePasswordForm()">
                         <input type="hidden" name="action" value="update_password">
 
                         <div class="mb-3">
@@ -86,13 +89,15 @@
 
                         <div class="mb-3">
                             <label class="form-label">新密碼</label>
-                            <input type="password" class="form-control" name="new_password" required>
+                            <input type="password" class="form-control" name="new_password"
+                                   id="new_password" required>
                             <div class="form-text">密碼必須包含至少8個字元</div>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">確認新密碼</label>
-                            <input type="password" class="form-control" name="confirm_password" required>
+                            <input type="password" class="form-control" name="confirm_password"
+                                   id="confirm_password" required>
                         </div>
 
                         <button type="submit" class="btn btn-primary">
@@ -108,7 +113,7 @@
 
 {% block scripts %}
 <script>
-    function previewImage(input) {
+    function handleAvatarChange(input) {
         if (input.files && input.files[0]) {
             const file = input.files[0];
 
@@ -126,6 +131,7 @@
                 return;
             }
 
+            // 預覽圖片
             const reader = new FileReader();
             reader.onload = function (e) {
                 const avatar = input.closest('.position-relative').querySelector('img');
@@ -144,9 +150,26 @@
             }
             reader.readAsDataURL(file);
 
-            // 自動提交表單
-            input.closest('form').submit();
+            // 只提交頭像表單
+            document.getElementById('avatarForm').submit();
         }
+    }
+
+    function validatePasswordForm() {
+        const newPassword = document.getElementById('new_password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+
+        if (newPassword.length < 8) {
+            alert('新密碼長度必須至少8個字元');
+            return false;
+        }
+
+        if (newPassword !== confirmPassword) {
+            alert('兩次輸入的密碼不一致');
+            return false;
+        }
+
+        return true;
     }
 
     // Flash 消息自動隱藏
